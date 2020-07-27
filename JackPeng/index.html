@@ -1,10 +1,112 @@
 <!DOCTYPE html>
 <html>
+
 	<head>
-		<meta charset="UTF-8">
+		<meta charset="utf-8" />
 		<title></title>
+		<link rel="stylesheet" href="../css/index.css" />
+		<style>
+			.el-header,
+			.el-footer {
+				
+				color: #333;
+				text-align: center;
+			
+			}
+			
+			.el-aside {
+			
+				color: #333;
+				text-align: center;
+			
+			}
+			
+			.el-main {
+			
+				color: #333;
+				text-align: center;
+			
+			}
+			
+			body>.el-container {
+				margin-bottom: 40px;
+			}
+			
+			.el-container:nth-child(5) .el-aside,
+			.el-container:nth-child(6) .el-aside {
+				
+			}
+			
+			.el-container:nth-child(7) .el-aside {
+				
+			}
+		</style>
 	</head>
+
 	<body>
-		<div>12312</div>
+		<div id="app">
+			<el-container>
+				<el-header>Header</el-header>
+				<el-container>
+					<!--左侧-->
+					<el-aside width="200px">
+						<el-col :span="24">
+						
+							<el-menu default-active="2" class="el-menu-vertical-demo" >
+								<el-submenu index="1">
+									<template slot="title">
+										<i class="el-icon-location"></i>
+										<span>客户档案</span>
+									</template>
+									<el-menu-item-group>
+									
+										<el-menu-item index="1-1" @click="showView('khzl.html')">客户资料</el-menu-item>
+										<el-menu-item index="1-2" @click="showView('clzl.html')">车辆资料</el-menu-item>
+									</el-menu-item-group>
+									
+								</el-submenu>
+								<el-menu-item index="2">
+									<i class="el-icon-menu"></i>
+									<span slot="title">会员管理</span>
+								</el-menu-item>		
+							</el-menu>
+						</el-col>
+					</el-aside>
+					<el-container>
+						<el-main>
+							<div id="cnt"></div>
+						</el-main>
+						<el-footer>Footer</el-footer>
+					</el-container>
+				</el-container>
+			</el-container>
+		</div>
 	</body>
+	<!--
+    	第二步
+    	描述：导入核心js类库
+    -->
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+
+	<!--
+    	第三步
+    	描述：构建vm引擎渲染
+    -->
+	<script>
+		var app = new Vue({
+			el:"#app",
+			data:{
+			
+			},
+			methods:{
+				showView(url) {
+					$('#cnt').load(url);
+				}
+			}
+		}	
+		);
+	</script>
+
 </html>

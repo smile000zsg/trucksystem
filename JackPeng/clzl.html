@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="appclzl">
+			<el-row>
+				<el-col :span="2">
+					<h1>车辆资料管理</h1>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="18">
+					<el-form :inline="true" :model="formInline" class="demo-form-inline">
+						<el-form-item label="车牌号">
+							<el-input placeholder="请输入内容"></el-input>
+						</el-form-item>
+
+						<el-form-item>
+							<el-button type="primary" icon="el-icon-search">查看</el-button>
+							<el-button type="success" plain>添加车辆</el-button>
+							<el-button type="info" icon="el-icon-delete-solid" plain>删除</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-table border style="width: 100%">
+							<el-table-column label="日期" width="180">
+							</el-table-column>
+							<el-table-column label="姓名" width="180">
+							</el-table-column>
+							<el-table-column label="地址">
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24" style="margin-top: 100px;">
+					<hr />
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="1">
+					<h1>顾客信息</h1>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-table  style="width: 100%">
+							<el-table-column  label="日期" width="180">
+							</el-table-column>
+							<el-table-column  label="姓名" width="180">
+							</el-table-column>
+							<el-table-column  label="地址">
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script>
+		var appclzl = new Vue({
+			el: "#appclzl",
+			data: {
+
+			}
+		})
+	</script>
+
+</html>

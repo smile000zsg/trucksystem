@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="vmtjcl2">
+			<el-form  label-width="100px" >
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="车牌号">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="驾驶员">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="驾驶员电话">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="车辆归属">
+							<el-select placeholder="请选择">
+								<el-option label="公司" value="shanghai"></el-option>
+								<el-option label="个人" value="beijing"></el-option>
+							</el-select>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="车辆品牌">
+							<el-select placeholder="请选择">
+								<el-option label="兰博基尼" value="shanghai"></el-option>
+								<el-option label="法拉利" value="beijing"></el-option>
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="车型">
+							<el-select placeholder="请选择">
+								<el-option label="GT" value="shanghai"></el-option>
+								<el-option label="258" value="beijing"></el-option>
+							</el-select>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="购车生日" >
+							<el-date-picker type="date" placeholder="选择日期" style="width: 100%;"></el-date-picker>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="汽车颜色">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="当前里程数">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="燃料类别">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="备注">
+							<el-input></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="客户编号">
+							<el-input v-model="clid"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="24">
+						<el-form-item>
+							<el-button type="primary">立即创建</el-button>
+							<el-button>重置</el-button>
+						</el-form-item>
+					</el-col>
+				</el-row>
+
+			</el-form>
+		</div>
+	</body>
+	<script>
+		var vmtjcl2 = new Vue({
+			el: "#vmtjcl2",
+			data: {
+				clid:''
+			},
+			mounted(){
+					let clid = sessionStorage.getItem('clid');
+					this.clid=clid;
+					sessionStorage.removeItem('clid');
+			}
+		})
+	</script>
+
+</html>

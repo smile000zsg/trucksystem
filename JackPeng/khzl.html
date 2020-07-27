@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="appone" v-loading="loading">
+			<el-row>
+				<el-col :span="2">
+					<h1>客户资料管理</h1>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="18">
+					<el-form :inline="true" class="demo-form-inline">
+						<el-form-item label="客户姓名">
+							<el-input placeholder="客户姓名"></el-input>
+						</el-form-item>
+
+						<el-form-item>
+							<el-button type="primary" icon="el-icon-search">搜索</el-button>
+							<el-button type="success" plain @click="showDialog2()">添加车资料</el-button>
+							<el-button type="success" plain @click="showDialog()">添加客户</el-button>
+							<el-button type="warning" plain>编辑</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-table highlight-current-row @current-change="handleCurrentChange" :data="client" border style="width: 100%">
+							<el-table-column label="客户编号" prop="clid" width="200">
+							</el-table-column>
+							<el-table-column label="客户名称" prop="clname" width="200">
+							</el-table-column>
+							<el-table-column label="客户性别" prop="clsex" width="200">
+							</el-table-column>
+							<el-table-column label="客户生日" prop="cldate" width="200">
+							</el-table-column>
+							<el-table-column label="客户联系方式" prop="clphone" width="200">
+							</el-table-column>
+							<el-table-column label="备注" prop="remark" width="200">
+							</el-table-column>
+							<el-table-column fixed="right" label="操作" width="300">
+								<template slot-scope="temp">
+									<el-button type="text" size="small" @click="showDialog3">修改客户资料</el-button>
+									<el-button type="text" size="small" @click="del(temp.row.clid)">删除</el-button>
+								</template>
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="2">
+					<h1>维修记录</h1>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-table style="width: 100%">
+							<el-table-column label="日期" width="180">
+							</el-table-column>
+							<el-table-column label="姓名" width="180">
+							</el-table-column>
+							<el-table-column label="地址">
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<!--模态框-->
+					<el-dialog :destroy-on-close="true" @opened="handlOpen" title="客户信息" :visible.sync="isShow" :before-close="handleClose" center>
+						<div id="modalcnt"></div>
+					</el-dialog>
+					<!--模态框-->
+					<el-dialog :destroy-on-close="true" @opened="handlOpen1" title="汽车信息" :visible.sync="isShow2" :before-close="handleClose1" center>
+						<div id="modalcnt"></div>
+					</el-dialog>
+					<!--模态框修改-->
+					<el-dialog :destroy-on-close="true" @opened="handlOpenup" title="修改信息" :visible.sync="isShow3" :before-close="handleCloseup" center>
+						<div id="modalcnt"></div>
+					</el-dialog>
+				</el-col>
+			</el-row>
+		</div>
+
+	</body>
+	<script>
+		var vm = new Vue({
+			el: "#appone",
+			data: {
+				client: [],
+				loading: true,
+				isShow: false,
+				isShow2: false,
+				isShow3:false
+			},
+			mounted() {
+				this.goToPage();
+			},
+			methods: {
+				handleCurrentChange(val) {	
+					sessionStorage.setItem('clid', val.clid);
+				},
+				goToPage() {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/client`, function(pg) {
+						_this.client = pg;
+						_this.loading = false;
+					});
+				},
+				del(clid) {
+					let _this = this;
+					this.$confirm('是否移除客户信息?', '系统提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						$.ajax(`http://localhost:8080/api/client/person/${clid}`, {
+							type: 'delete',
+							dataType: 'json',
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										type: 'success',
+										message: '删除成功!'
+									});
+									_this.loading = true;
+									_this.goToPage();
+								}
+							}
+						});
+
+					}).catch(() => {
+						this.$message({
+							type: 'info',
+							message: '已取消删除'
+						});
+					});
+				},
+				handlOpen() {
+					$("#modalcnt").load('tjcl.html');
+				},
+				handleClose(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+				},
+				handlOpen1() {	
+					$("#modalcnt").load('tjcl2.html');	
+				},
+				handleClose1(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+				},
+				handlOpenup() {	
+					$("#modalcnt").load('updatekh.html');	
+				},
+				handleCloseup(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+				},
+				showDialog() {
+					this.isShow = true;
+				},
+				showDialog2() {
+					this.isShow2 = true;
+				},
+				showDialog3() {
+					this.isShow3 = true;
+				}
+			}
+		})
+	</script>
+
+</html>

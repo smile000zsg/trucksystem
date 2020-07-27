@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="apptwo">
+			<el-form ref="formName" :rules="rules" :model="client" label-width="100px">
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="客户编号">
+							<el-input readonly v-model="client.clid"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="客户名称" prop="clname">
+							<el-input v-model="client.clname"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="客户生日">
+							<el-date-picker type="date" v-model="client.cldate" placeholder="选择日期" style="width: 100%;"></el-date-picker>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="客户性别">
+							<el-radio-group v-model="client.clsex">
+								<el-radio label="男"></el-radio>
+								<el-radio label="女"></el-radio>
+							</el-radio-group>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="12">
+						<el-form-item label="身份证" prop="clidentity">
+							<el-input v-model="client.clidentity"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="12">
+						<el-form-item label="联系方式" prop="clphone">
+							<el-input v-model="client.clphone"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="8">
+						<el-form-item label="省">
+							<el-input v-model="client.province"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="8">
+						<el-form-item label="市">
+							<el-input v-model="client.city"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="8">
+						<el-form-item label="区">
+							<el-input v-model="client.district"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="24">
+						<el-form-item label="详细地址">
+							<el-input v-model="client.address"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="24">
+						<el-form-item label="备注">
+							<el-input v-model="client.remark"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="24">
+						<el-form-item>
+							<el-button type="primary" @click="add">立即新增</el-button>
+							<el-button>重置</el-button>
+						</el-form-item>
+					</el-col>
+				</el-row>
+
+			</el-form>
+		</div>
+	</body>
+
+	<script>
+		var apptwo = new Vue({
+			el: "#apptwo",
+			data: {
+				//禁用用户编号输入栏
+				readonly: true,
+				client: {
+					clid: '',
+					clname: '',
+					cldate: '',
+					clsex: '',
+					clidentity: '',
+					clphone: '',
+					province: '',
+					city: '',
+					district: '',
+					address: '',
+					remark: '',
+					clstate: 0
+				},
+				rules: {
+					clname: [{
+							required: true,
+							message: '请输入客户名称',
+							trigger: 'blur'
+						},
+						{
+							min: 3,
+							max: 5,
+							message: '长度在 3 到 5 个字符',
+							trigger: 'blur'
+						}
+					],
+					clidentity: [{
+							required: true,
+							message: '请输入客户身份证',
+							trigger: 'blur'
+						},
+						{
+							min: 18,
+							max: 18,
+							message: '长度在 18个字符',
+							trigger: 'blur'
+						}
+					],
+					clphone: [{
+							required: true,
+							message: '请输入客户电话号码',
+							trigger: 'blur'
+						}
+					],
+				}
+			},
+			mounted() {
+				this.createCode()
+			},
+			methods: {
+				goBack() {
+					appone.isShow = false; //非常重要
+					app.showView('khzl.html'); //调用主页的vm引擎方法,跳页面
+				},
+				add() {
+					let _this = this;
+					this.$refs['formName'].validate(valid => {
+						if(valid) {
+							//验证通过
+							//自定义加载块
+							const loading = this.$loading({
+								lock: true,
+								text: '努力更新中....',
+								spinner: 'el-icon-loading',
+								background: 'rgba(0, 0, 0, 0.5)'
+							});
+							//延迟2秒，模拟网络延迟
+							setTimeout(() => {
+								$.ajax('http://localhost:8080/api/client/client', {
+									type: 'post',
+									data: JSON.stringify(_this.client),
+									dataType: 'json',
+									contentType: 'application/json',
+									success(message) {
+										if(message.code == "200") {
+											loading.close(); //关闭加载块【非常重要】
+											_this.$message({
+												type: 'success',
+												message: '新增成功'
+											});
+											_this.goBack();
+										}
+									}
+								});
+							}, 2000);
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+
+				},
+				//随机客户编号
+				createCode() {
+					var code = '';
+					//设置长度，这里看需求，我这里设置了4
+					var codeLength = 8;
+					//设置随机字符
+					var random = new Array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+					//循环codeLength 我设置的4就是循环4次
+					for(var i = 0; i < codeLength; i++) {
+						//设置随机数范围,这设置为0 ~ 36
+						var index = Math.floor(Math.random() * 9);
+						//字符串拼接 将每次随机的字符 进行拼接
+						code += random[index];
+					}
+					//将拼接好的字符串赋值给展示的code
+					this.client.clid = code;
+				}
+			}
+		})
+	</script>
+
+</html>
