@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+
+		</style>
+	</head>
+
+	<body>
+		<div id="appwxjc">
+			<el-row>
+				<el-col :span="2" :offset="6">
+					<p>选择账单：</p>
+				</el-col>
+				<el-col :span="4">
+					<template>
+						<el-select v-model="id" placeholder="请选择">
+							<el-option label="正在维修" value="1">正在维修
+							</el-option>
+							<el-option label="已竣工" value="2">已竣工
+							</el-option>
+						</el-select>
+					</template>
+				</el-col>
+				<el-col :span="2" :offset="6">
+					<el-button type="primary" @click="showView">生成订单</el-button>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-table style="width: 100%">
+							<el-table-column label="日期" width="180">
+							</el-table-column>
+							<el-table-column label="姓名" width="180">
+							</el-table-column>
+							<el-table-column label="地址">
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script>
+		var appwxjc = new Vue({
+			el: "#appwxjc",
+			data: {
+				id: ''
+			},
+			methods: {
+				showView() {
+					$('#cnt').load('znjc.html');
+				}
+			}
+		});
+	</script>
+
+</html>

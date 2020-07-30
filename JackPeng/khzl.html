@@ -32,7 +32,7 @@
 			<el-row>
 				<el-col :span="24">
 					<template>
-						<el-table highlight-current-row @current-change="handleCurrentChange" :data="client" border style="width: 100%">
+						<el-table highlight-current-row @current-change="handleCurrentChange2" :data="this.pageInfo.list" border style="width: 100%">
 							<el-table-column label="客户编号" prop="clid" width="200">
 							</el-table-column>
 							<el-table-column label="客户名称" prop="clname" width="200">
@@ -47,12 +47,18 @@
 							</el-table-column>
 							<el-table-column fixed="right" label="操作" width="300">
 								<template slot-scope="temp">
-									<el-button type="text" size="small" @click="showDialog3">修改客户资料</el-button>
+									<el-button type="text" size="small" @click="showDialog3(temp.row.clid)">修改客户资料</el-button>
 									<el-button type="text" size="small" @click="del(temp.row.clid)">删除</el-button>
 								</template>
 							</el-table-column>
 						</el-table>
 					</template>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<el-pagination v-if="pageInfo.total!=0" :background="true"  @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.pageNum" :page-size="pageInfo.pageSize" :total="pageInfo.total" :page-sizes="[1,3,6]" layout="total, sizes, prev, pager, next, jumper">
+					</el-pagination>
 				</el-col>
 			</el-row>
 			<el-row>
@@ -97,23 +103,33 @@
 		var vm = new Vue({
 			el: "#appone",
 			data: {
-				client: [],
+				pageInfo: {},
 				loading: true,
 				isShow: false,
 				isShow2: false,
 				isShow3:false
 			},
 			mounted() {
-				this.goToPage();
+				this.goToPage(1,1);
 			},
 			methods: {
-				handleCurrentChange(val) {	
+				handleSizeChange(val) {
+					this.goToPage(this.pageInfo.pageNum, val);
+				},
+				handleCurrentChange(val) {
+					this.goToPage(val, this.pageInfo.pageSize);
+				},
+				
+				handleCurrentChange2(val) {	
+					if(val==null){
+						return;
+					}
 					sessionStorage.setItem('clid', val.clid);
 				},
-				goToPage() {
+				goToPage(p, s) {
 					let _this = this;
-					$.getJSON(`http://localhost:8080/api/client`, function(pg) {
-						_this.client = pg;
+					$.getJSON(`http://localhost:8080/api/client/${p}/${s}`, function(pg) {
+						_this.pageInfo = pg;
 						_this.loading = false;
 					});
 				},
@@ -134,7 +150,7 @@
 										message: '删除成功!'
 									});
 									_this.loading = true;
-									_this.goToPage();
+									_this.goToPage(1,1);
 								}
 							}
 						});
@@ -176,7 +192,8 @@
 				showDialog2() {
 					this.isShow2 = true;
 				},
-				showDialog3() {
+				showDialog3(id) {
+					sessionStorage.setItem('id', id);
 					this.isShow3 = true;
 				}
 			}
