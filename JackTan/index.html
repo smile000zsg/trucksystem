@@ -11,7 +11,7 @@
 		<div id="staff">
 			<el-row>
 				<el-col :span="4">
-					<el-tree  @node-click="handleNodeClick"></el-tree>
+					<el-tree @node-click="handleNodeClick"></el-tree>
 				</el-col>
 				<el-col :span="20">
 					<el-col :span="5">
@@ -26,9 +26,9 @@
 						<el-button icon="el-icon-search">搜索</el-button>
 					</el-col>
 					<el-button type="primary" icon="el-icon-user" @click="open">入职办理</el-button>
-					<el-button type="warning" icon="el-icon-edit">修改资料</el-button>
+					<el-button type="warning" icon="el-icon-edit" @click="open2">修改资料</el-button>
 					<el-button type="danger" icon="el-icon-s-release">员工离职</el-button>
-					<el-table highlight-current-row :data="pageInfo.list" style="width: 100%">
+					<el-table highlight-current-row @current-change="handleCurrentChange2" :data="pageInfo.list" style="width: 100%">
 						<el-table-column label="序号" style="width: 30px;">
 							<template slot-scope="temp">
 								{{temp.$index+1}}
@@ -48,6 +48,10 @@
 						</el-table-column>
 						<el-table-column prop="empcard" label="身份证号">
 						</el-table-column>
+						<el-table-column prop="deptname" label="所属部门">
+						</el-table-column>
+						<el-table-column prop="postname" label="部门岗位">
+						</el-table-column>
 						<el-table-column prop="empentrydate" label="入职日期">
 						</el-table-column>
 						<el-table-column prop="empcorrectdate" label="转正日期">
@@ -59,9 +63,6 @@
 
 				<el-dialog title="员工入职信息登记" :visible.sync="dialogVisible" width="50%">
 					<el-form :model="employee" :rules="rules" ref="employee" label-width="100px" class="demo-ruleForm">
-						<el-form-item label="员工编号" prop="empid">
-							<el-input v-model="employee.empid"></el-input>
-						</el-form-item>
 						<el-form-item label="员工姓名" prop="empname">
 							<el-input v-model="employee.empname"></el-input>
 						</el-form-item>
@@ -83,6 +84,18 @@
 						<el-form-item label="身份证" prop="empcard">
 							<el-input v-model.number="employee.empcard" autocomplete="off"></el-input>
 						</el-form-item>
+						<el-form-item  label="部门选择" >
+							<el-select v-model="employee.deptid" placeholder="请选择">
+								<el-option v-for="item in dept" :key="item.deptid" :label="item.deptname" :value="item.deptid">
+								</el-option>
+							</el-select>
+						</el-form-item>
+						<el-form-item  label="岗位选择" >
+							<el-select v-model="employee.postid" placeholder="请选择">
+								<el-option v-for="item in post" :key="item.postid" :label="item.postname" :value="item.postid">
+								</el-option>
+							</el-select>
+						</el-form-item>
 						<el-form-item label="入职日期">
 							<el-form-item prop="empentrydate">
 								<el-date-picker type="date" placeholder="选择日期" v-model="employee.empentrydate" style="width: 100%;"></el-date-picker>
@@ -99,6 +112,61 @@
 						</el-form-item>
 					</el-form>
 				</el-dialog>
+
+				<el-dialog title="员工入职信息修改" :visible.sync="dialogVisible2" width="50%">
+					<el-form :model="employee2" :rules="rules" ref="employee2" label-width="100px" class="demo-ruleForm">
+						<el-form-item label="员工编号" prop="empid">
+							<el-input :disabled="true" v-model="employee2.empid"></el-input>
+						</el-form-item>
+						<el-form-item label="员工姓名" prop="empname">
+							<el-input v-model="employee2.empname"></el-input>
+						</el-form-item>
+						<el-form-item label="联系方式" prop="empphone">
+							<el-input v-model.number="employee2.empphone" autocomplete="off"></el-input>
+						</el-form-item>
+						<el-form-item label="员工性别">
+							<el-radio-group v-model="employee2.empsex">
+								<el-radio label="男"></el-radio>
+								<el-radio label="女"></el-radio>
+							</el-radio-group>
+						</el-form-item>
+						<el-form-item label="电子邮箱" prop="empemail">
+							<el-input v-model="employee2.empemail"></el-input>
+						</el-form-item>
+						<el-form-item label="家庭住址" prop="empaddress">
+							<el-input v-model="employee2.empaddress"></el-input>
+						</el-form-item>
+						<el-form-item label="身份证" prop="empcard">
+							<el-input v-model.number="employee2.empcard" autocomplete="off"></el-input>
+						</el-form-item>
+						<el-form-item label="部门选择" >
+							<el-select v-model="employee2.deptid" placeholder="请选择">
+								<el-option v-for="item in dept" :key="item.deptid" :label="item.deptname" :value="item.deptid">
+								</el-option>
+							</el-select>
+						</el-form-item>
+						<el-form-item  label="岗位选择" >
+							<el-select v-model="employee2.postid" placeholder="请选择">
+								<el-option v-for="item in post" :key="item.postid" :label="item.postname" :value="item.postid">
+								</el-option>
+							</el-select>
+						</el-form-item>
+						<el-form-item label="入职日期">
+							<el-form-item prop="empentrydate">
+								<el-date-picker type="date" placeholder="选择日期" v-model="employee2.empentrydate" style="width: 100%;"></el-date-picker>
+							</el-form-item>
+						</el-form-item>
+						<el-form-item label="转正日期">
+							<el-form-item prop="empcorrectdate">
+								<el-date-picker type="date" placeholder="选择日期" v-model="employee2.empcorrectdate" style="width: 100%;"></el-date-picker>
+							</el-form-item>
+						</el-form-item>
+						<el-form-item>
+							<el-button type="primary" @click="updateSubmit('employee2')">修改</el-button>
+							<el-button type="primary" @click="dialogVisible2 = false">关闭</el-button>
+						</el-form-item>
+					</el-form>
+				</el-dialog>
 			</el-row>
 		</div>
 	</body>
@@ -108,8 +176,11 @@
 	<script type="text/javascript">
 		var vm = new Vue({
 			data: {
+				dept:[],
+				post:[],
 				pageInfo: {},
 				dialogVisible: false,
+				dialogVisible2: false,
 				employee: {
 					empid: "",
 					empname: "",
@@ -119,37 +190,68 @@
 					empphone: "",
 					empcard: "",
 					empentrydate: new Date(),
-					empcorrectdate:"",
-					deptd: "",
+					empcorrectdate: "",
+					deptid: "",
 					postid: "",
-					empstate:0,
-					empaddress:""
+					empstate: 0,
+					empaddress: ""
 				},
-				
-				rules:{
-					empid:[
-						{ required: true, message: '请输入员工编号', trigger: 'blur' }
+				employee2: {
+					empid: "",
+					empname: "",
+					empsex: "",
+					empborne: "",
+					empemail: "",
+					empphone: "",
+					empcard: "",
+					empentrydate: "",
+					empcorrectdate: "",
+					deptid: "",
+					postid: "",
+					empstate: 0,
+					empaddress: ""
+				},
+
+				rules: {
+					empid: [{
+						required: true,
+						message: '请输入员工编号',
+						trigger: 'blur'
+					}],
+					empname: [{
+						required: true,
+						message: '请输入员工姓名',
+						trigger: 'blur'
+					}],
+					empphone: [{
+							required: true,
+							message: '请输入联系方式',
+							trigger: 'blur'
+						},
+						{
+							type: 'number',
+							message: '联系方式必须为数字值'
+						}
 					],
-					empname:[
-						{ required: true, message: '请输入员工姓名', trigger: 'blur' }
-					],
-					empphone:[
-						{required: true, message: '请输入联系方式', trigger: 'blur'},
-						{ type: 'number', message: '联系方式必须为数字值'}
-					],
-					empemail:[
-						{ type: 'email', message: '请输入正确的邮箱地址', trigger: ['blur', 'change'] }
-					],
-					empcard:[
-						{required: true, message: '请输入身份证号码', trigger: 'blur'}
-					]
+					empemail: [{
+						type: 'email',
+						message: '请输入正确的邮箱地址',
+						trigger: ['blur', 'change']
+					}],
+					empcard: [{
+						required: true,
+						message: '请输入身份证号码',
+						trigger: 'blur'
+					}]
 				}
 			},
 			methods: {
-				handleNodeClick(data) {},
+				handleNodeClick(data) {
+
+				},
 				goToPage(p, s) {
 					let _this = this;
-					$.getJSON(`http://127.0.0.1:8080/api/TX/${p}/${s}`, function(data) {
+					$.getJSON(`http://127.0.0.1:8080/api/TX/emp/${p}/${s}`, function(data) {
 						_this.pageInfo = data;
 					});
 				},
@@ -159,37 +261,79 @@
 				handleCurrentChange(val) {
 					this.goToPage(val, this.pageInfo.pageSize);
 				},
-				open(){
-					this.dialogVisible=true;
+				open() {
+					this.dialogVisible = true;
+				},
+				open2() {
+					this.dialogVisible2 = true;
 				},
 				submitForm(formName) {
 					let _this = this;
-			        _this.$refs[formName].validate((valid) => {
-			          if (valid) {
-						$.ajax('http://127.0.0.1:8080/api/TX/add',{
-							type:"post",
-							data:JSON.stringify(_this.employee),
-							dataType:"json",
-							contentType: "application/json",
-							success(msg){
-								if(msg.code=="200"){
-									_this.$notify({
-										title: '入职成功',
-									    message: '员工入职成功！',
-									    type: 'success'
-									});
-									_this.dialogVisible=false;
+					_this.$refs[formName].validate((valid) => {
+						if(valid) {
+							$.ajax('http://127.0.0.1:8080/api/TX/emp/add', {
+								type: "post",
+								data: JSON.stringify(_this.employee),
+								dataType: "json",
+								contentType: "application/json",
+								success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '员工入职成功！',
+											type: 'success'
+										});
+										goToPage(1,2);
+										_this.dialogVisible = false;
+									}
 								}
-							}
-						});
-			          } else {
-			            return false;
-			          }
-			        });
-			     },
+							});
+						} else {
+							return false;
+						}
+					});
+				},
+
+				updateSubmit(formName) {
+					let _this = this;
+					_this.$refs[formName].validate((valid) => {
+						if(valid) {
+							$.ajax('http://127.0.0.1:8080/api/TX/emp/update', {
+								type: "put",
+								data: JSON.stringify(_this.employee2),
+								dataType: "json",
+								contentType: "application/json",
+								success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '员工资料修改成功！',
+											type: 'success'
+										});
+										goToPage(1,2);
+										_this.dialogVisible2 = false;
+									}
+								}
+							});
+						} else {
+							return false;
+						}
+					});
+				},
+				handleCurrentChange2(val) {
+					if(val == null) {
+						return;
+					}
+					this.employee2 = val;
+				}
 			},
 			mounted() {
-				this.goToPage(1, 2);
+				let _this = this;
+				_this.goToPage(1, 2);
+				$.getJSON('http://127.0.0.1:8080/api/TX/post/query',function(data){
+					_this.post=data;
+				});
+				$.getJSON('http://127.0.0.1:8080/api/TX/dept/query',function(data){
+					_this.dept=data;
+				});
 			}
 		}).$mount("#staff");
 	</script>
