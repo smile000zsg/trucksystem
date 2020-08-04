@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../css/index.css" />
+	</head>
+
+	<body>
+		<div id="post">
+			<el-row>
+				<el-col :span="4">
+					<el-input v-model="post.postname" placeholder="请输入岗位名称"></el-input>
+				</el-col>
+				<el-col :span="4" :offset="2">
+					<el-button type="primary" @click="add">新增</el-button>
+					<el-button type="info" @click="update">修改</el-button>
+					<el-button type="danger" @click="del">删除</el-button>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-table  highlight-current-row @current-change="handleCurrentChange" :data="postList" style="width: 650px;">
+					<el-table-column align="center" label="序号">
+						<template slot-scope="temp">
+							{{temp.$index+1}}
+						</template>
+					</el-table-column>
+					<el-table-column align="center" prop="postname" label="岗位">
+					</el-table-column>
+				</el-table>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script type="text/javascript">
+		var vm = new Vue({
+			data: {
+				postList: [],
+				post: {}
+			},
+			methods: {
+				handleCurrentChange(val) {
+					if(val == null) {
+						return;
+					}
+					this.post = val;
+				},
+				queryAll() {
+					let _this = this;
+					$.getJSON('http://127.0.0.1:8080/api/TX/post/query', function(data) {
+						_this.postList = data;
+					});
+				},
+				add() {
+					let _this = this;
+					if(_this.post.postname==null){
+						_this.$message('请输入新增的岗位名称！');
+						return;
+					}
+					$.ajax('http://127.0.0.1:8080/api/TX/post/add', {
+						type: "post",
+						dataType: "json",
+						contentType: "application/json",
+						data: JSON.stringify(_this.post),
+						success(msg) {
+							if(msg.code == "200") {
+								_this.$message({
+									message: '增加岗位成功！',
+									type: 'success'
+								});
+							}
+							_this.queryAll();
+						}
+					});
+				},
+				del() {
+					let _this = this;
+					if(_this.post.postname==null){
+						_this.$message('请选择您要删除的岗位！');
+						return ;
+					}
+					_this.$confirm('是否删除此岗位？', "删除提示", {
+						confirmButtonText: '确认',
+						cancelButtonText: '取消'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/post/delete/${_this.post.postid}`, {
+							type: "delete",
+							dataType: "json",
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '删除岗位成功！',
+										type: 'success'
+									});
+								}
+								_this.queryAll();
+							}
+						});
+
+					}).catch(() => {
+						_this.$message('取消删除操作！');
+					});
+
+				},
+				update() {
+					let _this = this;
+					if(_this.post.postname==null){
+						_this.$message('请选择您要修改的岗位！');
+						return ;
+					}
+					_this.$confirm('是否修改岗位信息？', "修改提示", {
+						confirmButtonText: '确认',
+						cancelButtonText: '取消'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/post/update`, {
+							type: "put",
+							dataType: "json",
+							contentType: "application/json",
+							data: JSON.stringify(_this.post),
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '修改岗位信息成功！',
+										type: 'success'
+									});
+								}
+								_this.queryAll();
+							}
+						});
+
+					}).catch(() => {
+						_this.$message('取消修改操作！');
+					});
+				}
+			},
+			mounted() {
+				this.queryAll();
+			}
+		}).$mount("#post");
+	</script>
+
+</html>
