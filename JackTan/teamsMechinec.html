@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../css/index.css" />
+	</head>
+
+	<body>
+		<div id="teams">
+			<el-row>
+				<el-col :span="4">
+					<el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+				</el-col>
+				<el-col :span="20">
+					<el-col :span="5">
+						<el-input placeholder="请输入技工姓名" clearable>
+						</el-input>
+					</el-col>
+					<el-col :span="5" :offset="1">
+						<el-input placeholder="请输入技工手机" clearable>
+						</el-input>
+					</el-col>
+					<el-col :span="2" :offset="1">
+						<el-button icon="el-icon-search">搜索</el-button>
+					</el-col>
+					<el-button type="primary" icon="el-icon-user">添加技工</el-button>
+					<el-button type="warning" icon="el-icon-edit">编辑技工</el-button>
+					<el-button type="danger" icon="el-icon-s-release">移除技工</el-button>
+					<el-table highlight-current-row @current-change="handleCurrentChange2"  :data="mecList" style="width: 100%">
+						<el-table-column align="center" label="序号" style="width: 30px;">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column prop="mecid" align="center" label="技工编号" style="width: 30px;">
+						</el-table-column>
+						<el-table-column prop="mecname" align="center" label="技工姓名" style="width: 30px;">
+						</el-table-column>
+						<el-table-column prop="mecsex" align="center" label="技工性别" style="width: 30px;">
+						</el-table-column>
+						<el-table-column prop="teamsname" align="center" label="班组名称">
+						</el-table-column>
+						<el-table-column prop="mecphone" align="center" label="技工手机">
+						</el-table-column>
+						<el-table-column prop="mecaddress" align="center" label="技工地址">
+						</el-table-column>
+						<el-table-column prop="mecborndate" align="center" label="出生日期">
+						</el-table-column>
+						<el-table-column prop="starslevel" align="center" label="技工星级">
+						</el-table-column>
+					</el-table>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script>
+		var vm = new Vue({
+			data: {
+				mecList:[],
+				mechanic:{
+					starsid:'',
+					teamsid:'',
+					mecname:'',
+					mecsex:'',
+					mecphone:'',
+					mecborndate:'',
+					mecaddress:'',
+					meccard:'',
+					mecprice:''
+				},
+				mechanic2:{},
+				teams:[],
+				stars:[]
+			},
+			methods: {
+				handleNodeClick(data) {},
+				handleCurrentChange2(val) {
+					if(val == null) {
+						return;
+					}
+					this.mechanic2 = val;
+				}
+			},
+			mounted(){
+				let _this = this;
+				$.getJSON('http://127.0.0.1:8080/api/TX/mec/queryAllMec',function(data){
+						_this.mecList=data;
+				});
+			}
+
+		}).$mount("#teams");
+	</script>
+
+</html>
