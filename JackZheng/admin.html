@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" href="../css/index.css" />
+	</head>
+	<style>
+		body {}
+		
+		.box {
+			border-radius: 4px;
+			width: 300px;
+			height: 280px;
+			;
+			box-shadow: 0 2px 8px 0 rgba(0, 0, 0, .1);
+		}
+		.text_box {
+			padding-top: 10px;
+		}
+		
+		.texe_tile {
+			font-size: 20px;
+		}
+		
+		.box_1 {
+			border: 1px solid silver;
+			border-radius: 4px;
+			width: 280px;
+			margin: auto;
+			margin-top: 10px;
+		}
+		
+		.box_2 {
+			line-height: 25px;
+		}
+		
+		.col_box {
+			border: 1px solid silver;
+			height: 595px;
+		}
+		
+		.col_box {
+			padding-left: 20px;
+		}
+		
+		.col_box2 {
+			border: 1px solid silver;
+			height: 595px;
+			overflow: hidden;
+			overflow: auto;
+			border-left: 0px;
+		}
+		
+		.zhi {
+			font-size: 16px;
+			margin-left: -5px;
+			line-height: 40px;
+		}
+		
+		.baocun {
+			line-height: 2px;
+			margin-left: 60px;
+		}
+		
+		.title_text {
+			position: fixed;
+			width: 77%;
+			text-align: center;
+			background-color: white;
+			line-height: 50px;
+			z-index: 1;
+		}
+	</style>
+
+	<body>
+		<div id="adminapp">
+			<el-row>
+				<el-col :span="4" :offset="1" class="col_box">
+					<div class="zhi">公司职位</div>
+					<el-tree :data="role" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+				</el-col>
+				<el-col :span="19" class="col_box2">
+					<div class="title_text"><strong>公司权限管理</strong>
+						<el-button class="baocun" type="success">保存设置</el-button>
+					</div>
+					<el-row style="margin-left:20px;margin-top:50px;">
+						<el-col :span="8" style="margin-top:10px;" v-for="temp in menuinfo">
+							<div class="box">
+								<el-row class="text_box">
+									<el-col style="text-align: center;">
+										<div class="texe_tile">{{temp.menuname}}</div>
+									</el-col>
+								</el-row>
+								<div class="box_1" v-for="temp2 in temp.ment_next" style="height:105px;">
+									<el-row id="yj" style="margin-top:5px;">
+										<el-col :offset="1"><input type="checkbox" @click="chec(temp2.nid,$event)" class="chec" :value="temp2.nid"> {{temp2.next_name}}</el-col>
+									</el-row>
+
+									<div class="box_2" v-for="item3 in temp.next_er">
+										<div style="margin-top:5px;" v-if="temp2.nid==item3.nid">
+											<el-col :span="10" :offset="1" ><input class="yj" type="checkbox" @click="name(item3.nid,$event)" class="er_checbox" :value="item3.nid"> {{item3.ename}}</el-col>
+										</div>
+									</div>
+								</div>
+							</div>
+						</el-col>
+					</el-row>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/jq_ajax_config.js"></script>
+	<script>
+		var admin = new Vue({
+			data() {
+				return {
+					menuinfo: [],
+					role: [{
+						rolename: '',
+						users: [{
+							account: ''
+						}],
+					}],
+					defaultProps: {
+						children: 'users',
+						label: 'account'
+					}
+				};
+			},
+			methods: {
+				handleNodeClick(data) {
+					console.log(data);
+				},
+				chec(s, e) {
+					if($(e.target).is(':checked')) {
+						$(".yj").each(function() {
+							if($(this).val()==s){
+								 $(this).prop("checked", "checked");
+							}
+						})
+					} else if(!$(e.target).is(':checked')) {
+						$(".yj").each(function() {
+							if($(this).val()==s){
+								 $(this).prop("checked", false);
+							}
+						})
+					}
+				},
+				name(s,e){
+					if($(e.target).is(':checked')) {
+						$(".chec").each(function() {
+							if($(this).val()==s){
+								 $(this).prop("checked", "checked");
+							}
+						})
+					} else if(!$(e.target).is(':checked')) {
+						$(".chec").each(function() {
+							if($(this).val()==s){
+								 $(this).prop("checked", false);
+							}
+						})
+					}
+				}
+			},
+			mounted() {
+				let _this = this;
+				$.getJSON(`http://localhost:8080/api/role`, function(data) {
+					_this.role = data;
+					for(var i = 0; i < _this.role.length; i++) {
+						_this.role[i].account = _this.role[i].rolename;
+					}
+				})
+				$.getJSON(`http://localhost:8080/api/menuinfo`, function(data) {
+					_this.menuinfo = data;
+				})
+			}
+		}).$mount("#adminapp");
+	</script>
+
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>收银</title>
+		<link rel="stylesheet" href="../css/index.css" />
+	</head>
+	<body>
+		<div id="cashierapp">
+			<el-table :data="this.pageInfo.list" border :default-sort = "{prop: 'paymenttime', order: 'descending'}">
+				<el-table-column prop="oid" label="订单编号"  align="center"></el-table-column>
+				<el-table-column prop="order.ostate" label="单据类型"  align="center" :formatter="stateFormat"> </el-table-column> 
+				<el-table-column prop="settlementmode" label="结算方式"  align="center" :formatter="stateFormat1"></el-table-column>
+				<el-table-column prop="state" label="状态"  align="center" :formatter="stateFormat2"></el-table-column>
+				<el-table-column label="付款时间" width="180" align="center" sortable>
+   					<template slot-scope="scope">
+       					<span style="margin-left: 10px">{{ scope.row.paymenttime }}</span>
+      				</template>
+				</el-table-column>
+				<el-table-column prop="order.sums" label="结算金额"  align="center"></el-table-column>
+				<el-table-column prop="deductionprice" label="抵扣金额"  align="center"></el-table-column>
+				<el-table-column prop="businesstype" label="业务类型"  align="center"></el-table-column>
+				<el-table-column prop="order.oname" label="客户名称"  align="center"></el-table-column>
+				<el-table-column prop="order.olicense" label="车牌号"  align="center"></el-table-column>
+				<el-table-column fixed="right" label="操作"  width="180" align="center">
+					<template slot-scope="scope" >
+						<el-button class="button" type='success' size="mini" @click="cashier(scope.row.oid)">收银</el-button>			
+						<el-button class="button" type='primary' size="mini">打开</el-button>			
+					</template>
+				</el-table-column>
+			</el-table>
+			<el-row style="margin-top:30px; text-align: center;">
+				<el-col :span="24">
+					<el-pagination v-if="pageInfo.total!=0" :background="true" :pager-count="5" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.pageNum" :page-size="pageInfo.pageSize" :total="pageInfo.total" :page-sizes="[3,6]"  layout="total, sizes, prev, pager, next, jumper">
+					</el-pagination>
+				</el-col>
+			</el-row>
+			<el-dialog  v-for="temp4 in order" title="支付" :visible.sync="dialogVisible" width="35%" :before-close="handleClose">
+				 <el-row>
+				 	<el-col> 
+				 		<el-col :span="6" align="end">订单编号： </el-col>
+				 		<el-col :span="6">{{temp4.oid}}</el-col>
+				 		<el-col :span="6"  align="end">单据类型：</el-col>
+				 		<el-col :span="6"> {{temp4.ostate}}</el-col>
+				 	</el-col>
+				 </el-row>
+				 <el-row style="margin-top:7px;">
+					  	<el-col :span="6"  align="end">客户姓名：</el-col>
+				 		<el-col :span="6" style="border:1px solid white">{{temp4.oname}}</el-col>
+				 		<el-col :span="6"  align="end">车牌编号：</el-col>
+				 		<el-col :span="6">{{temp4.olicense}}</el-col>
+				 </el-row>
+				 <el-row>
+				 	<el-table  :data = "details">
+				 		<el-table-column prop="detailsname" label="维修项目" align="center"></el-table-column>
+				 		<el-table-column prop="detailsprice" label="项目价格" align="center"></el-table-column>
+				 		<el-table-column prop="detailscount" label="(件数/小时)" align="center"></el-table-column>
+				 		<el-table-column :formatter="count" class="price" label="小计" align="center"></el-table-column>
+				 	</el-table>
+				 </el-row>
+				 <el-row style="line-height:25px;margin-top:10px;" class="row_1">
+				 	<el-col   align="end">
+				 		<el-col :span="17">总计：</el-col>
+				 		<el-col :span="5" v-text="sum"></el-col>
+				 	</el-col>
+				 	<el-col align="end">
+				 		<el-col :span="17">应付金额：</el-col>
+				 		<el-col :span="5" v-text="sum"></el-col>
+				 	</el-col>
+				 </el-row>
+				 <el-row  style="line-height:25px; display: none;" class="box_row">
+				 	<el-col   align="right">
+				 		<el-col :span="18">总计：</el-col>
+				 		<el-col :span="5"></el-col>
+				 	</el-col>
+				 	<el-col align="end">
+				 		<el-col :span="18">会员卡号：</el-col>
+				 		<el-col :span="5">2020080401</el-col>
+				 	</el-col>
+				 	<el-col align="end">
+				 		<el-col :span="18">积分：</el-col>
+				 		<el-col :span="5">1095</el-col>
+				 	</el-col>
+			 		<el-col align="end">
+				 		<el-col :span="18">折扣：</el-col>
+				 		<el-col :span="5">9折</el-col>
+				 	</el-col>
+			 		<el-col align="end">
+				 		<el-col :span="18">应付金额：</el-col>
+				 		<el-col :span="5">19.80</el-col>
+				 	</el-col>
+				 </el-row>
+				 <el-row style="margin-top:10px;">
+				 	<el-col :offset="1">
+					 	<el-col :span="10"><el-button type='primary' size="mini" @click="vipplay">会员9折优惠，选择会员</el-button></el-col>
+				 		<el-col :span="7"><el-button type='primary' size="mini" @click="payment">现金支付</el-button></el-col>
+			 			<el-col :span="5"><el-button type='primary' size="mini">支付宝扫码</el-button></el-col>
+				 	</el-col>
+				 </el-row>
+			</el-dialog>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/jq_ajax_config.js"></script>
+	<script>
+		var cashier = new Vue({
+			data(){
+				return {
+					dialogVisible:false,
+					pageInfo:{},
+					order:{},
+					details:[],
+					sum:''
+				}
+			},methods:{
+				gotoPage(pageNum,pageSize){
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/settlement/${pageNum}/${pageSize}`,function(data){
+						_this.pageInfo= data;
+					})
+				},handleClose(done) {
+	   				this.$confirm('是否关闭',{
+	   					confirmButtonText:"是",
+	   					cancelButtonText:"否"
+	   				}).then(()=> {
+			            done();
+			        }).catch(()=> {
+			        	//当选择否才会执行的
+			        });
+			    },cashier(oid){
+			    	let _this = this;
+			    	this.dialogVisible=true;
+			    	$.getJSON(`http://localhost:8080/api/settlement/queryDetails/${oid}`,function(data){
+			    		_this.order=data;
+			    		_this.details =data[0].details;
+			    		var price=0;
+			    		for(var i = 0; i < _this.details.length; i++) {
+						 	price+=_this.details[i].detailscount * _this.details[i].detailsprice;	
+			    		}
+			    		 _this.sum = price;
+				        })
+			    	
+			    },vipplay(){
+//			     	$(".box_row").css("display","block");
+//			     	$(".row_1").css("display","none");
+			    	this.$prompt('请输入会员卡号', '提示', {
+			        }).then(({ value }) => {
+			          this.$message({
+			            type: 'success',
+			            message: '您的VIP卡号是: ' + value
+			          });
+			        }).catch(() => {
+			          this.$message({
+			            type: 'info',
+			            message: '取消输入'
+			          });       
+			        });
+			    },handleSizeChange(val) {
+					this.gotoPage(this.pageInfo.pageNum, val);
+				},handleCurrentChange(val) {
+					this.gotoPage(val, this.pageInfo.pageSize);
+				},stateFormat(row, column) {
+				    if (row.order.ostate === 1) {
+				      return '站内'
+				    } else{
+				      return '站外'
+				    } 
+				 },stateFormat1(row, column) {
+				    if (row.settlementmode === '') {
+				      return '未结算'
+				    }  
+				 },stateFormat2(row,column){
+			 		if(row.state===1){
+			 			return '已结算'
+			 		}else {
+			 			return '未结算'
+			 		}
+			 	},count(row,column){
+			 		count = row.detailscount * row.detailsprice;	
+			 		return count;
+			 	},payment(){
+			 		let _this = this;
+			 		const loading = this.$loading({
+						lock: true,
+						text: '努力更新中....',
+						spinner: 'el-icon-loading',
+						background: 'rgba(0, 0, 0, 0.5)'
+					});
+					setTimeout(() => {
+						loading.close();
+		  				this.$message({
+				            type: 'success',
+				            message: '支付成功'
+			          	});   
+					},1000);
+			 	}
+			},mounted(){
+				 this.gotoPage(1,3);
+			}
+		}).$mount("#cashierapp")
+	</script>
+</html>
