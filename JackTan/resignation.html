@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../css/index.css" />
+	</head>
+
+	<body>
+		<div id="resignation">
+			<el-row>
+				<el-col :span="4" :offset="1">
+					<el-input placeholder="请输入员工姓名"></el-input>
+				</el-col>
+				<el-col :span="2" :offset="1">
+					<el-button icon="el-icon-search">搜索</el-button>
+				</el-col>
+				<el-col :span="4" :offset="10">
+					<el-button type="primary" @click="rollback">员工复职</el-button>
+					<el-button type="danger" @click="commit">确认离职</el-button>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col>
+					<el-table highlight-current-row @current-change="handleCurrentChange" :data="resignationList" style="width: 100%">
+						<el-table-column align="center" label="序号">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column align="center" prop="empname" label="员工姓名">
+						</el-table-column>
+						<el-table-column align="center" prop="deptname" label="员工部门">
+						</el-table-column>
+						<el-table-column align="center" prop="resdate" label="离职日期">
+						</el-table-column>
+						<el-table-column align="center" prop="resignationreson" label="离职原因">
+						</el-table-column>
+					</el-table>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script type="text/javascript">
+		var vm = new Vue({
+			data: {
+				resignationList: [],
+				resignation: {}
+			},
+			methods: {
+				queryAllRes() {
+					let _this = this;
+					$.getJSON('http://127.0.0.1:8080/api/TX/res/query', function(data) {
+						_this.resignationList = data;
+					});
+				},
+				handleCurrentChange(val) {
+					this.resignation = val;
+				},
+				rollback() {
+					let _this = this;
+					if(_this.resignation.empid==null || _this.resignation.empid==""){
+						_this.$message('请选择需要复职的员工！');
+						return;
+					}
+					_this.$confirm('是否确认复职此员工？', "复职提示", {
+						confirmButtonText: '确认',
+						cancelButtonText: '取消'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/res/rollback/${_this.resignation.empid}/${_this.resignation.resid}`, {
+							type: "delete",
+							dataType: "json",
+							contentType: "application/json",
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '员工复职成功！',
+										type: 'success'
+									});
+								}
+								_this.queryAllRes();
+							}
+						});
+
+					}).catch(() => {
+						_this.$message('取消复职操作！');
+					});
+				},
+				commit() {
+					let _this = this;
+					if(_this.resignation.empid==null || _this.resignation.empid==""){
+						_this.$message('请选择需要确认离职的员工！');
+						return;
+					}
+					_this.$confirm('是否确认离职此员工？', "离职提示", {
+						confirmButtonText: '确认',
+						cancelButtonText: '取消'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/res/commit/${_this.resignation.resid}`, {
+							type: "delete",
+							dataType: "json",
+							contentType: "application/json",
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '员工已成功离职！',
+										type: 'success'
+									});
+								}
+								_this.queryAllRes();
+							}
+						});
+
+					}).catch(() => {
+						_this.$message('取消离职操作！');
+					});
+				}
+			},
+			mounted() {
+				this.queryAllRes();
+			}
+		}).$mount("#resignation");
+	</script>
+
+</html>

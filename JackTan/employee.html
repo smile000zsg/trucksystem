@@ -11,7 +11,7 @@
 		<div id="staff">
 			<el-row>
 				<el-col :span="4">
-					<el-tree @node-click="handleNodeClick"></el-tree>
+					<el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
 				</el-col>
 				<el-col :span="20">
 					<el-col :span="5">
@@ -27,34 +27,34 @@
 					</el-col>
 					<el-button type="primary" icon="el-icon-user" @click="open">入职办理</el-button>
 					<el-button type="warning" icon="el-icon-edit" @click="open2">修改资料</el-button>
-					<el-button type="danger" icon="el-icon-s-release">员工离职</el-button>
-					<el-table highlight-current-row @current-change="handleCurrentChange2" :data="pageInfo.list" style="width: 100%">
-						<el-table-column label="序号" style="width: 30px;">
+					<el-button type="danger" icon="el-icon-s-release" @click="resignation">员工离职</el-button>
+					<el-table  highlight-current-row @current-change="handleCurrentChange2" :data="pageInfo.list" style="width: 100%">
+						<el-table-column label="序号" align="center" style="width: 30px;">
 							<template slot-scope="temp">
 								{{temp.$index+1}}
 							</template>
 						</el-table-column>
-						<el-table-column prop="empid" label="员工编号" style="width: 30px;">
+						<el-table-column prop="empid" align="center" label="员工编号" style="width: 30px;">
 						</el-table-column>
-						<el-table-column prop="empname" label="员工姓名" style="width: 30px;">
+						<el-table-column prop="empname" align="center" label="员工姓名" style="width: 30px;">
 						</el-table-column>
-						<el-table-column prop="empsex" label="员工性别" style="width: 30px;">
+						<el-table-column prop="empsex" align="center" label="员工性别" style="width: 30px;">
 						</el-table-column>
-						<el-table-column prop="empborne" label="出生日期">
+						<el-table-column prop="empborne" align="center" label="出生日期">
 						</el-table-column>
-						<el-table-column prop="empemail" label="员工邮箱">
+						<el-table-column prop="empemail" align="center" label="员工邮箱">
 						</el-table-column>
-						<el-table-column prop="empphone" label="联系方式">
+						<el-table-column prop="empphone" align="center" label="联系方式">
 						</el-table-column>
-						<el-table-column prop="empcard" label="身份证号">
+						<el-table-column prop="empcard" align="center" label="身份证号">
 						</el-table-column>
-						<el-table-column prop="deptname" label="所属部门">
+						<el-table-column prop="deptname" align="center" label="所属部门">
 						</el-table-column>
-						<el-table-column prop="postname" label="部门岗位">
+						<el-table-column prop="postname" align="center" label="部门岗位">
 						</el-table-column>
-						<el-table-column prop="empentrydate" label="入职日期">
+						<el-table-column prop="empentrydate" align="center" label="入职日期">
 						</el-table-column>
-						<el-table-column prop="empcorrectdate" label="转正日期">
+						<el-table-column prop="empcorrectdate" align="center" label="转正日期">
 						</el-table-column>
 					</el-table>
 					<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.currentPage" :page-sizes="[2, 4, 6, 8]" :page-size="pageInfo.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageInfo.total">
@@ -67,7 +67,7 @@
 							<el-input v-model="employee.empname"></el-input>
 						</el-form-item>
 						<el-form-item label="联系方式" prop="empphone">
-							<el-input v-model.number="employee.empphone" autocomplete="off"></el-input>
+							<el-input v-model.number="employee.empphone" maxlength="11" show-word-limit autocomplete="off"></el-input>
 						</el-form-item>
 						<el-form-item label="员工性别">
 							<el-radio-group v-model="employee.empsex">
@@ -84,13 +84,13 @@
 						<el-form-item label="身份证" prop="empcard">
 							<el-input v-model.number="employee.empcard" autocomplete="off"></el-input>
 						</el-form-item>
-						<el-form-item  label="部门选择" >
+						<el-form-item label="部门选择" prop="deptid">
 							<el-select v-model="employee.deptid" placeholder="请选择">
 								<el-option v-for="item in dept" :key="item.deptid" :label="item.deptname" :value="item.deptid">
 								</el-option>
 							</el-select>
 						</el-form-item>
-						<el-form-item  label="岗位选择" >
+						<el-form-item label="岗位选择" prop="postid">
 							<el-select v-model="employee.postid" placeholder="请选择">
 								<el-option v-for="item in post" :key="item.postid" :label="item.postname" :value="item.postid">
 								</el-option>
@@ -122,7 +122,7 @@
 							<el-input v-model="employee2.empname"></el-input>
 						</el-form-item>
 						<el-form-item label="联系方式" prop="empphone">
-							<el-input v-model.number="employee2.empphone" autocomplete="off"></el-input>
+							<el-input v-model.number="employee2.empphone" maxlength="11" show-word-limit autocomplete="off"></el-input>
 						</el-form-item>
 						<el-form-item label="员工性别">
 							<el-radio-group v-model="employee2.empsex">
@@ -139,13 +139,13 @@
 						<el-form-item label="身份证" prop="empcard">
 							<el-input v-model.number="employee2.empcard" autocomplete="off"></el-input>
 						</el-form-item>
-						<el-form-item label="部门选择" >
+						<el-form-item label="部门选择" prop="deptid">
 							<el-select v-model="employee2.deptid" placeholder="请选择">
 								<el-option v-for="item in dept" :key="item.deptid" :label="item.deptname" :value="item.deptid">
 								</el-option>
 							</el-select>
 						</el-form-item>
-						<el-form-item  label="岗位选择" >
+						<el-form-item label="岗位选择" prop="postid">
 							<el-select v-model="employee2.postid" placeholder="请选择">
 								<el-option v-for="item in post" :key="item.postid" :label="item.postname" :value="item.postid">
 								</el-option>
@@ -176,8 +176,17 @@
 	<script type="text/javascript">
 		var vm = new Vue({
 			data: {
+	 			post: [],
 				dept:[],
-				post:[],
+				tree:[{
+					deptname:'九郎山总部',
+					dept:[]
+				}],
+				defaultProps: {
+					children: 'dept',
+					label: 'deptname',
+					id:'deptid'
+				},
 				pageInfo: {},
 				dialogVisible: false,
 				dialogVisible2: false,
@@ -242,12 +251,21 @@
 						required: true,
 						message: '请输入身份证号码',
 						trigger: 'blur'
+					}],
+					deptid:[{
+						required: true,
+						message: '请选择部门',
+						trigger: 'change'
+					}],
+					postid:[{
+						required: true,
+						message: '请选择岗位',
+						trigger: 'change'
 					}]
 				}
 			},
 			methods: {
 				handleNodeClick(data) {
-
 				},
 				goToPage(p, s) {
 					let _this = this;
@@ -265,6 +283,10 @@
 					this.dialogVisible = true;
 				},
 				open2() {
+					if(this.employee2.empid==null || this.employee2.empid==""){
+						this.$message('请选择需要修改资料的员工！');
+						return;
+					}
 					this.dialogVisible2 = true;
 				},
 				submitForm(formName) {
@@ -282,7 +304,7 @@
 											message: '员工入职成功！',
 											type: 'success'
 										});
-										goToPage(1,2);
+										_this.goToPage(1, 2);
 										_this.dialogVisible = false;
 									}
 								}
@@ -308,7 +330,7 @@
 											message: '员工资料修改成功！',
 											type: 'success'
 										});
-										goToPage(1,2);
+										_this.goToPage(1, 2);
 										_this.dialogVisible2 = false;
 									}
 								}
@@ -318,6 +340,44 @@
 						}
 					});
 				},
+
+				resignation() {
+					let _this = this;
+					if(_this.employee2.empid==null || _this.employee2.empid==""){
+						_this.$message('请选择离职员工！');
+						return;
+					}
+					_this.$prompt('请输入离职原因', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+					}).then(({value}) => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/emp/res/${_this.employee2.empid}/${_this.employee2.deptid}/${value}`,{
+							type: "put",
+							dataType: "json",
+							contentType: "application/json",
+							success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '员工离职成功！',
+											type: 'success'
+										});
+										_this.goToPage(1, 2);
+									}else{
+										_this.$message({
+											message: '员工离职失败！',
+											type: 'error'
+										});
+									}
+								}
+						})
+					}).catch(() => {
+						_this.$message({
+							type: 'info',
+							message: '取消离职操作！'
+						});
+					});
+				},
+
 				handleCurrentChange2(val) {
 					if(val == null) {
 						return;
@@ -328,11 +388,14 @@
 			mounted() {
 				let _this = this;
 				_this.goToPage(1, 2);
-				$.getJSON('http://127.0.0.1:8080/api/TX/post/query',function(data){
-					_this.post=data;
+				$.getJSON('http://127.0.0.1:8080/api/TX/post/query', function(data) {
+					_this.post = data;
 				});
-				$.getJSON('http://127.0.0.1:8080/api/TX/dept/query',function(data){
-					_this.dept=data;
+				$.getJSON('http://127.0.0.1:8080/api/TX/dept/query', function(data) {
+					_this.dept = data;
+					for (var i = 0 ;i<_this.dept.length;i++) {
+						_this.tree[0].dept.push(_this.dept[i]);
+					}
 				});
 			}
 		}).$mount("#staff");
