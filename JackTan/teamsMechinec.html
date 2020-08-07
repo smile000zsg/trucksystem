@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../css/index.css" />
+	</head>
+
+	<body>
+		<div id="teams">
+			<el-row>
+				<el-col :span="4">
+					<el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+				</el-col>
+				<el-col :span="20">
+					<el-col :span="5">
+						<el-input placeholder="请输入技工姓名" clearable>
+						</el-input>
+					</el-col>
+					<el-col :span="5" :offset="1">
+						<el-input placeholder="请输入技工手机" clearable>
+						</el-input>
+					</el-col>
+					<el-col :span="2" :offset="1">
+						<el-button icon="el-icon-search">搜索</el-button>
+					</el-col>
+					<el-button type="primary" icon="el-icon-user" @click="open1">添加技工</el-button>
+					<el-button type="warning" icon="el-icon-edit" @click="open2">编辑技工</el-button>
+					<el-button type="danger" icon="el-icon-s-release" @click="delMec">移除技工</el-button>
+					<el-table highlight-current-row @current-change="handleCurrentChange2" :data="mecList" style="width: 100%">
+						<el-table-column align="center" label="序号" style="width: 30px;">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column prop="mecid" align="center" label="技工编号" style="width: 30px;">
+						</el-table-column>
+						<el-table-column prop="mecname" align="center" label="技工姓名" style="width: 30px;">
+						</el-table-column>
+						<el-table-column prop="mecsex" align="center" label="技工性别" style="width: 30px;">
+						</el-table-column>
+						<el-table-column prop="teamsname" align="center" label="班组名称">
+						</el-table-column>
+						<el-table-column prop="mecphone" align="center" label="技工手机">
+						</el-table-column>
+						<el-table-column prop="mecaddress" align="center" label="技工地址">
+						</el-table-column>
+						<el-table-column prop="mecborndate" align="center" label="出生日期">
+						</el-table-column>
+						<el-table-column prop="starslevel" align="center" label="技工星级">
+						</el-table-column>
+					</el-table>
+				</el-col>
+			</el-row>
+
+			<el-dialog title="添加技工信息" :visible.sync="dialogVisible" width="50%">
+				<el-form :model="mechanic" :rules="rules" ref="mechanic" label-width="100px" class="demo-ruleForm">
+					<el-form-item label="技工姓名" prop="mecname">
+						<el-input v-model="mechanic.mecname "></el-input>
+					</el-form-item>
+					<el-form-item label="手机号码" prop="mecphone">
+						<el-input v-model.number="mechanic.mecphone" maxlength="11" show-word-limit autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="员工性别">
+						<el-radio-group v-model="mechanic.mecsex">
+							<el-radio label="男"></el-radio>
+							<el-radio label="女"></el-radio>
+						</el-radio-group>
+					</el-form-item>
+					<el-form-item label="家庭住址" prop="mecaddress">
+						<el-input v-model="mechanic.mecaddress"></el-input>
+					</el-form-item>
+					<el-form-item label="身份证号" prop="meccard">
+						<el-input v-model.number="mechanic.meccard" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="班组选择" prop="teamsid">
+						<el-select v-model="mechanic.teamsid" placeholder="请选择">
+							<el-option v-for="item in teams" :key="item.teamsid" :label="item.teamsname" :value="item.teamsid">
+							</el-option>
+						</el-select>
+					</el-form-item>
+					<el-form-item label="技工星级" prop="starsid">
+						<el-select v-model="mechanic.starsid" placeholder="请选择">
+							<el-option v-for="item in stars" :key="item.starsid" :label="item.starslevel" :value="item.starsid">
+							</el-option>
+						</el-select>
+					</el-form-item>
+					<el-form-item label="出生日期">
+						<el-form-item prop="mecborndate">
+							<el-date-picker type="date" placeholder="选择日期" v-model="mechanic.mecborndate" style="width: 100%;"></el-date-picker>
+						</el-form-item>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" @click="addMec('mechanic')">添加</el-button>
+						<el-button type="primary" @click="dialogVisible = false">关闭</el-button>
+					</el-form-item>
+				</el-form>
+			</el-dialog>
+			<el-dialog title="编辑技工信息" :visible.sync="dialogVisible2" width="50%">
+				<el-form :model="mechanic2" :rules="rules" ref="mechanic2" label-width="100px" class="demo-ruleForm">
+					<el-form-item label="技工姓名" prop="mecname">
+						<el-input v-model="mechanic2.mecname "></el-input>
+					</el-form-item>
+					<el-form-item label="手机号码" prop="mecphone">
+						<el-input v-model.number="mechanic2.mecphone" maxlength="11" show-word-limit autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="员工性别">
+						<el-radio-group v-model="mechanic2.mecsex">
+							<el-radio label="男"></el-radio>
+							<el-radio label="女"></el-radio>
+						</el-radio-group>
+					</el-form-item>
+					<el-form-item label="家庭住址" prop="mecaddress">
+						<el-input v-model="mechanic2.mecaddress"></el-input>
+					</el-form-item>
+					<el-form-item label="身份证号" prop="meccard">
+						<el-input v-model.number="mechanic2.meccard" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="班组选择" prop="teamsid">
+						<el-select v-model="mechanic2.teamsid" placeholder="请选择">
+							<el-option v-for="item in teams" :key="item.teamsid" :label="item.teamsname" :value="item.teamsid">
+							</el-option>
+						</el-select>
+					</el-form-item>
+					<el-form-item label="技工星级" prop="starsid">
+						<el-select v-model="mechanic2.starsid" placeholder="请选择">
+							<el-option v-for="item in stars" :key="item.starsid" :label="item.starslevel" :value="item.starsid">
+							</el-option>
+						</el-select>
+					</el-form-item>
+					<el-form-item label="出生日期">
+						<el-form-item prop="mecborndate">
+							<el-date-picker type="date" placeholder="选择日期" v-model="mechanic2.mecborndate" style="width: 100%;"></el-date-picker>
+						</el-form-item>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" @click="updateMec('mechanic2')">提交</el-button>
+						<el-button type="primary" @click="dialogVisible2 = false">关闭</el-button>
+					</el-form-item>
+				</el-form>
+			</el-dialog>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script>
+		var vm = new Vue({
+			data: {
+				mecList: [],
+				dialogVisible: false,
+				dialogVisible2: false,
+				mechanic: {
+					starsid: '',
+					teamsid: '',
+					mecname: '',
+					mecsex: '',
+					mecphone: '',
+					mecborndate: '',
+					mecaddress: '',
+					meccard: '',
+					mecprice: ''
+				},
+				mechanic2: {},
+				teams: [],
+				stars: [],
+				rules: {
+					mecname: [{
+						required: true,
+						message: '请输入员工姓名',
+						trigger: 'blur'
+					}],
+					mecphone: [{
+							required: true,
+							message: '请输入联系方式',
+							trigger: 'blur'
+						},
+						{
+							type: 'number',
+							message: '联系方式必须为数字值'
+						}
+					],
+					meccard: [{
+						required: true,
+						message: '请输入身份证号码',
+						trigger: 'blur'
+					}],
+					starsid: [{
+						required: true,
+						message: '请选择星级',
+						trigger: 'change'
+					}],
+					teamsid: [{
+						required: true,
+						message: '请选择班组',
+						trigger: 'change'
+					}]
+				}
+			},
+			methods: {
+				queryAllMec() {
+					let _this = this;
+					$.getJSON('http://127.0.0.1:8080/api/TX/mec/queryAllMec', function(data) {
+						_this.mecList = data;
+					});
+				},
+				handleNodeClick(data) {},
+				handleCurrentChange2(val) {
+					if(val == null) {
+						return;
+					}
+					this.mechanic2 = val;
+				},
+				open1() {
+					this.dialogVisible = true;
+				},
+				open2() {
+					if(this.mechanic2.mecid == null || this.mechanic2.mecid == "") {
+						this.$message('请选择需要修改资料的员工！');
+						return;
+					}
+					this.dialogVisible2 = true;
+				},
+				addMec(formName) {
+					let _this = this;
+					_this.$refs[formName].validate((valid) => {
+						if(valid) {
+							$.ajax('http://127.0.0.1:8080/api/TX/mec/add', {
+								type: "post",
+								data: JSON.stringify(_this.mechanic),
+								dataType: "json",
+								contentType: "application/json",
+								success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '添加技工成功！',
+											type: 'success'
+										});
+										_this.queryAllMec();
+										_this.dialogVisible = false;
+									} else {
+										_this.$message({
+											message: '添加技工失败！',
+											type: 'error'
+										});
+									}
+								}
+							});
+						} else {
+							return false;
+						}
+					});
+				},
+				updateMec(formName) {
+					let _this = this;
+					_this.$refs[formName].validate((valid) => {
+						if(valid) {
+							$.ajax('http://127.0.0.1:8080/api/TX/mec/updateMec', {
+								type: "put",
+								data: JSON.stringify(_this.mechanic2),
+								dataType: "json",
+								contentType: "application/json",
+								success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '技工资料修改成功！',
+											type: 'success'
+										});
+										_this.queryAllMec();
+										_this.dialogVisible2 = false;
+									} else {
+										_this.$message({
+											message: '技工资料修改失败！',
+											type: 'error'
+										});
+									}
+								}
+							});
+						} else {
+							return false;
+						}
+					});
+				},
+				delMec() {
+					let _this = this;
+					if(_this.mechanic2.mecid == null || _this.mechanic2.mecid == "") {
+						_this.$message('请选择需要移除的技工！');
+						return;
+					}
+					_this.$confirm('此操作将永久移除该技工, 是否继续?', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/mec/delMec/${_this.mechanic2.mecid}`, {
+							type: "delete",
+							dataType: "json",
+							contentType: "application/json",
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '技工移除成功！',
+										type: 'success'
+									});
+									_this.queryAllMec();
+								} else {
+									_this.$message({
+										message: '技工移除失败！',
+										type: 'error'
+									});
+								}
+							}
+						})
+					}).catch(() => {
+						_this.$message({
+							type: 'info',
+							message: '已取消删除'
+						});
+					});
+				}
+			},
+			mounted() {
+				let _this = this;
+				_this.queryAllMec();
+				$.getJSON('http://127.0.0.1:8080/api/TX/teams/queryAllTeams', function(data) {
+					_this.teams = data;
+				});
+				$.getJSON('http://127.0.0.1:8080/api/TX/stars/queryAllStars', function(data) {
+					_this.stars = data;
+				});
+			}
+
+		}).$mount("#teams");
+	</script>
+</html>

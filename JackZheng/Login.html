@@ -3,64 +3,261 @@
 	<head>
 		<meta charset="UTF-8">
 		<title></title>
-		<link rel="stylesheet" href="css/index.css" />
+		<link rel="stylesheet" href="../css/index.css" />
 	</head>
+	<style>
+		body{
+		}
+		.el-tabs__nav-wrap::after{
+			content: "";
+		    position: absolute;
+		    left: 0;
+		    bottom: 0;
+		    width:62%;
+		    height: 2px;
+		    background-color: #E4E7ED;
+		    z-index: 1;
+		}
+		#app{
+			margin-left:60%;
+			margin-top:50px;
+		}
+		.el-form-item{
+			margin: 0px;
+		}
+		.el-tabs__item{
+			width:167px;
+			text-align: center;
+		}
+		.el-tab-pane{
+			line-height:50px;	
+		}
+		.el-row{
+			margin-top:20px;
+		}
+	</style>
 	<body>
 		<div id="app">
-			<el-form :model="ruleForm2" status-icon :rules="rules2" ref="ruleForm2" label-width="100px" class="demo-ruleForm">
-				<el-form-item label="密码" prop="pass">
-					<el-input type="password" v-model="ruleForm2.pass" auto-complete="off"></el-input>
-				</el-form-item>
-				<el-form-item label="确认密码" prop="checkPass">
-					<el-input type="password" v-model="ruleForm2.checkPass" auto-complete="off"></el-input>
-				</el-form-item>
-				<el-form-item label="年龄" prop="age">
-					<el-input v-model.number="ruleForm2.age"></el-input>
-				</el-form-item>
-				<el-form-item>
-					<el-button type="primary" @click="submitForm('ruleForm2')">提交</el-button>
-					<el-button @click="resetForm('ruleForm2')">重置</el-button>
-				</el-form-item>
-			</el-form>
+			<template>
+				<el-tabs v-model="activeName">
+					<el-tab-pane label="登录" name="first">
+						<el-form :model="Users" status-icon :rules="rules2" ref="Users" label-width="50px" class="demo-ruleForm">
+							<el-row>
+								<el-col :span="15">
+									<el-input type="text" v-model="Users.account"  placeholder="请输入会员名称"></el-input>
+								</el-col>
+							</el-row>
+							<el-row>
+								<el-col :span="15">
+									<el-input type="password" v-model="Users.password" placeholder="请输入会员密码" auto-complete="off"></el-input>
+								</el-col>
+							</el-row>
+							<el-row>
+								<el-col>
+									<el-button type="primary" style="width:62.5%;" @click="Login(Users.account,Users.password)">立即登录</el-button>
+								</el-col>
+							</el-row>
+						</el-form>
+					</el-tab-pane>
+					<el-tab-pane label="注册" name="second">
+							<el-form :model="Users" status-icon :rules="rules2" ref="Users" label-width="0px" class="demo-ruleForm">
+								<el-row>
+									<el-form-item prop="account">
+										<el-col :span="15">
+											<el-input type="text" v-model="Users.account"  placeholder="请输入会员名称"></el-input>
+										</el-col>
+									</el-form-item>
+								</el-row>
+								<el-row>
+									<el-form-item prop="password">
+										<el-col :span="15">
+											<el-input type="password" v-model="Users.password" placeholder="请输入会员密码" auto-complete="off"></el-input>
+										</el-col>
+									</el-form-item>
+								</el-row>
+								<el-row>
+									<el-form-item prop="checkPass">
+										<el-col :span="15">
+											<el-input type="password" v-model="Users.checkPass" placeholder="请再次输入你的密码" auto-complete="off"></el-input>
+										</el-col>
+									</el-form-item>
+								</el-row>
+								<el-row>
+									<el-form-item prop="phone">
+										<el-col :span="15">
+											<el-input v-model.number="Users.phone" placeholder="请输入手机号码"></el-input>
+										</el-col>
+									</el-form-item>
+								</el-row>
+								<el-row>
+									<el-form-item prop="age">
+										<el-col :span="15">
+											<el-input v-model.number="Users.age" placeholder="年龄不能小于18岁"></el-input>
+										</el-col>
+									</el-form-item>
+								</el-row>
+								<el-row>
+									<el-col :span="15">
+										<el-button style="width:48%" type="primary" @click="submitForm">注册</el-button>
+										<el-button   style="width:47.5%;" @click="resetForm('Users')">重置</el-button>
+									<el-col>
+								</el-row>
+							</el-form>
+					</el-tab-pane> 
+				</el-tabs>
+			</template>
 		</div>
 	</body>
 	<script type="text/javascript" src="../js/vue.js" ></script>
 	<script type="text/javascript" src="../js/index.js" ></script>
 	<script type="text/javascript" src="../js/jquery-1.12.4.js" ></script>
+	<script type="text/javascript" src="../js/jq_ajax_config.js" ></script>
 	<script>
 		var login = new Vue({
-			data:{
-				ruleForm2: {
-		          pass: '',
-		          checkPass: '',
-		          age: ''
-		        },
-		        rules2: {
-		          pass: [
-		            { validator: validatePass, trigger: 'blur' }
-		          ],
-		          checkPass: [
-		            { validator: validatePass2, trigger: 'blur' }
-		          ],
-		          age: [
-		            { validator: checkAge, trigger: 'blur' }
-		          ]
-		        }
-      		},methods:{
-	      		 submitForm(formName) {
-			        this.$refs[formName].validate((valid) => {
-			          if (valid) {
-			            alert('submit!');
-			          } else {
-			            console.log('error submit!!');
-			            return false;
-			          }
-			        });
-			     },
-			     resetForm(formName) {
-			        this.$refs[formName].resetFields();
-			     }
-   	 		}
+		data() {
+	      var checkAge = (rule, value, callback) => {
+	        if (!value) {
+	          return callback(new Error('年龄不能为空'));
+	        }
+	        setTimeout(() => {
+	          if (!Number.isInteger(value)) {
+	            callback(new Error('请输入数字值'));
+	          } else {
+	            if (value < 18) {
+	              callback(new Error('必须年满18岁'));
+	            } else {
+	              callback();
+	            }
+	          }
+	        }, 1000);
+	      };
+	      var validatePass = (rule, value, callback) => {
+	        if (value === '') {
+	          callback(new Error('请输入密码'));
+	        } else {
+	          if (this.Users.checkPass !== '') {
+	            this.$refs.Users.validateField('checkPass');
+	          }
+	          callback();
+	        }
+	      };
+	      var validatePass2 = (rule, value, callback) => {
+	        if (value === '') {
+	          callback(new Error('请再次输入密码'));
+	        } else if (value !== this.Users.password) {
+	          callback(new Error('两次输入密码不一致!'));
+	        } else {
+	          callback();
+	        }
+	      };
+	      return {
+	      	activeName: 'first',
+	        Users: {
+	       	  account:'',
+	       	  sex:'',
+	       	  username:'',
+	          password:'',
+	          checkPass: '',
+	          phone:'',
+	          cratetime:'2000-1-1',
+	          age: ''
+	        },
+	        sex: ['男', '女'],
+	        rules2: {
+	         account: [{
+					required: true,
+					message: '请输入会员名称',
+					trigger: 'blur'
+				},
+				{
+					min: 2,
+					max: 5,
+					message: '长度在 2 到 5 个字符',
+					trigger: 'blur'
+				}
+			  ],
+			 // phone:[{
+				//	min: 11,
+					//max: 11,
+					//message: '请输入11位手机号码',
+					//trigger: 'blur'
+				//},{ type: 'number', message: '手机号码必须为数字值'}
+//			  ,{
+//					 pattern: /^(13[0-9]|14[579]|15[0-3,5-9]|16[6]|17[0135678]|18[0-9]|19[89])\d{8}$/,
+//        			 message: "请输入正确的手机号码"
+//				}
+	        //  ],
+	          password:[
+	            { required: true,validator: validatePass, trigger: 'blur' }
+	          ],
+	          checkPass:[
+	            {required: true,validator: validatePass2, trigger: 'blur' }
+	          ],
+	          age:[
+	            {required: true,validator: checkAge, trigger: 'blur' }
+	          ]
+	        }
+	      }
+	    },methods: {
+		      submitForm() {
+		      	let _this =this;
+		          	alert("12");
+		          	const loading = this.$loading({
+						lock: true,
+						text: '努力更新中....',
+						spinner: 'el-icon-loading',
+						background: 'rgba(0, 0, 0, 0.5)'
+					});
+					setTimeout(() => {
+						$.ajax('http://localhost:8080/api/Users',{
+					  		type:"post",
+					  		data:JSON.stringify(this.Users),
+					  		dataType:"json",
+					  		contentType:"application/json",
+					  		success(msg){
+					  			if(msg.code==200){
+					  				loading.close();
+					  				_this.$alert("注册成功");
+					  			}else{
+					  				_this.$alert("注册失败");
+					  			}
+					  		}
+					  	})
+					},2000);
+		      },
+		      resetForm(formName) {
+		        this.$refs[formName].resetFields();
+		      },
+		      handleClick(tab, event) {
+			       console.log(tab, event);
+			  },
+			  Login(account,password){
+			  	let _this =this;
+				  	$.getJSON(`http://localhost:8080/api/${account}/${password}`,function(message){
+				  		if(message.code==200){
+					  		const loading = _this.$loading({
+								lock: true,
+								text: '登录中....',
+								spinner: 'el-icon-loading',
+								background: 'rgba(0, 0, 0, 0.5)'
+							});
+							setTimeout(() => {
+								loading.close();
+					  			_this.$message({
+									type: 'success',
+									message: '登录成功',
+									
+								});
+							},2000)
+				  		}else{
+				  			_this.$message({
+									type: 'error',
+									message: '登录失败'
+							});
+				  		}
+				  	})
+			  }
+		  }
 		}).$mount("#app")
 	</script>
-</html>
+</html>	

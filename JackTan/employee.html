@@ -67,7 +67,7 @@
 							<el-input v-model="employee.empname"></el-input>
 						</el-form-item>
 						<el-form-item label="联系方式" prop="empphone">
-							<el-input v-model.number="employee.empphone" autocomplete="off"></el-input>
+							<el-input v-model.number="employee.empphone" maxlength="11" show-word-limit autocomplete="off"></el-input>
 						</el-form-item>
 						<el-form-item label="员工性别">
 							<el-radio-group v-model="employee.empsex">
@@ -84,13 +84,13 @@
 						<el-form-item label="身份证" prop="empcard">
 							<el-input v-model.number="employee.empcard" autocomplete="off"></el-input>
 						</el-form-item>
-						<el-form-item label="部门选择">
+						<el-form-item label="部门选择" prop="deptid">
 							<el-select v-model="employee.deptid" placeholder="请选择">
 								<el-option v-for="item in dept" :key="item.deptid" :label="item.deptname" :value="item.deptid">
 								</el-option>
 							</el-select>
 						</el-form-item>
-						<el-form-item label="岗位选择">
+						<el-form-item label="岗位选择" prop="postid">
 							<el-select v-model="employee.postid" placeholder="请选择">
 								<el-option v-for="item in post" :key="item.postid" :label="item.postname" :value="item.postid">
 								</el-option>
@@ -122,7 +122,7 @@
 							<el-input v-model="employee2.empname"></el-input>
 						</el-form-item>
 						<el-form-item label="联系方式" prop="empphone">
-							<el-input v-model.number="employee2.empphone" autocomplete="off"></el-input>
+							<el-input v-model.number="employee2.empphone" maxlength="11" show-word-limit autocomplete="off"></el-input>
 						</el-form-item>
 						<el-form-item label="员工性别">
 							<el-radio-group v-model="employee2.empsex">
@@ -139,13 +139,13 @@
 						<el-form-item label="身份证" prop="empcard">
 							<el-input v-model.number="employee2.empcard" autocomplete="off"></el-input>
 						</el-form-item>
-						<el-form-item label="部门选择">
+						<el-form-item label="部门选择" prop="deptid">
 							<el-select v-model="employee2.deptid" placeholder="请选择">
 								<el-option v-for="item in dept" :key="item.deptid" :label="item.deptname" :value="item.deptid">
 								</el-option>
 							</el-select>
 						</el-form-item>
-						<el-form-item label="岗位选择">
+						<el-form-item label="岗位选择" prop="postid">
 							<el-select v-model="employee2.postid" placeholder="请选择">
 								<el-option v-for="item in post" :key="item.postid" :label="item.postname" :value="item.postid">
 								</el-option>
@@ -251,6 +251,16 @@
 						required: true,
 						message: '请输入身份证号码',
 						trigger: 'blur'
+					}],
+					deptid:[{
+						required: true,
+						message: '请选择部门',
+						trigger: 'change'
+					}],
+					postid:[{
+						required: true,
+						message: '请选择岗位',
+						trigger: 'change'
 					}]
 				}
 			},
