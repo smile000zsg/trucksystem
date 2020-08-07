@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../css/index.css" />
+	</head>
+	<body>
+		<div id="stars">
+			<el-row>
+				<el-col :span="4">
+					<el-input v-model="stars.starslevel" placeholder="请输入星级"></el-input>
+				</el-col>
+				<el-col :span="4" :offset="2">
+					<el-button type="primary" @click="add">添加</el-button>
+					<el-button type="info" @click="update">编辑</el-button>
+					<el-button type="danger" @click="del">移除</el-button>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-table  highlight-current-row @current-change="handleCurrentChange" :data="starsList" style="width: 650px;">
+					<el-table-column align="center" label="序号">
+						<template slot-scope="temp">
+							{{temp.$index+1}}
+						</template>
+					</el-table-column>
+					<el-table-column align="center" prop="starslevel" label="星级">
+					</el-table-column>
+				</el-table>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script>
+		var vm = new Vue({
+			data:{
+				starsList:[],
+				stars:{}
+			},
+			methods:{
+				handleCurrentChange(val) {
+					if(val == null) {
+						return;
+					}
+					this.stars=val;
+				},
+				queryAll(){
+					let _this = this;
+					$.getJSON('http://127.0.0.1:8080/api/TX/stars/queryAllStars', function(data) {
+						_this.starsList = data;
+					});
+				},
+				add(){
+					let _this = this;
+					if(_this.stars.starslevel==null){
+						_this.$message('请输入添加的星级等级！');
+						return;
+					}
+					$.ajax('http://127.0.0.1:8080/api/TX/stars/addStars', {
+						type: "post",
+						dataType: "json",
+						contentType: "application/json",
+						data: JSON.stringify(_this.stars),
+						success(msg) {
+							if(msg.code == "200") {
+								_this.$message({
+									message: '添加星级成功！',
+									type: 'success'
+								});
+							}
+							_this.queryAll();
+						}
+					});
+				},
+				del(){
+					let _this = this;
+					if(_this.stars.starslevel==null){
+						_this.$message('请选择您要移除的星级！');
+						return ;
+					}
+					_this.$confirm('是否移除此星级？', "删除提示", {
+						confirmButtonText: '确认',
+						cancelButtonText: '取消'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/stars/del/${_this.stars.starsid}`, {
+							type: "delete",
+							dataType: "json",
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '移除星级成功！',
+										type: 'success'
+									});
+								}
+								_this.queryAll();
+							}
+						});
+
+					}).catch(() => {
+						_this.$message('取消删除操作！');
+					});
+				},
+				update(){
+					let _this = this;
+					if(_this.stars.starslevel==null){
+						_this.$message('请选择您要编辑的星级！');
+						return ;
+					}
+					_this.$confirm('是否编辑星级信息？', "修改提示", {
+						confirmButtonText: '确认',
+						cancelButtonText: '取消'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/stars/update`, {
+							type: "put",
+							dataType: "json",
+							contentType: "application/json",
+							data: JSON.stringify(_this.stars),
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '修改岗位信息成功！',
+										type: 'success'
+									});
+								}
+								_this.queryAll();
+							}
+						});
+
+					}).catch(() => {
+						_this.$message('取消修改操作！');
+					});
+				}
+			},
+			mounted(){
+				this.queryAll();
+			}
+		}).$mount("#stars");
+	</script>
+</html> 
