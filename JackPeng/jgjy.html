@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="appjgjy">
+			<el-row>
+				<el-col :span="18">
+					<el-form :inline="true" class="demo-form-inline">
+						<el-form-item label="维修单号">
+							<el-input placeholder="支持模糊查"></el-input>
+						</el-form-item>
+						<el-form-item label="竣工状态">
+							<template>
+								<el-select placeholder="请选择" v-model="id">
+									<el-option label="正在维修" value="1">正在维修
+									</el-option>
+									<el-option label="已竣工" value="2">已竣工
+									</el-option>
+								</el-select>
+							</template>
+						</el-form-item>
+						<el-form-item label="开单时间">
+							<div class="block">
+								<el-date-picker type="date" placeholder="选择日期">
+								</el-date-picker>
+							</div>
+						</el-form-item>
+						<el-form-item>
+							<el-button type="primary" icon="el-icon-search">搜索</el-button>
+							<el-button type="warning" plain>清空</el-button>
+						</el-form-item>
+					</el-form>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="20" :offset="2">
+					<template>
+						<el-table :data="this.pageInfo.list" style="width: 100%">
+							<el-table-column label="维修单号" prop="oid" width="180">
+							</el-table-column>
+							<el-table-column label="车牌号" prop="olicense" width="180">
+							</el-table-column>
+							<el-table-column label="开单时间" prop="odatetime" width="180">
+							</el-table-column>
+							<el-table-column label="维修人员" prop="crew" width="180">
+							</el-table-column>
+							<el-table-column label="车型" prop="omodel" width="180">
+							</el-table-column>
+							<el-table-column label="联系电话" prop="ophone" width="180">
+							</el-table-column>
+							<el-table-column label="维修总金额" prop="sums" width="180">
+							</el-table-column>
+							<el-table-column label="操作" width="300">
+								<template slot-scope="temp">
+									<p v-if="temp.row.wstate==0">
+										<el-button type="primary" plain @click="showDialog2(temp.row.oid,temp.row.crew,temp.row.rework)">正在维修</el-button>
+										<el-button type="primary" @click="showDialog(temp.row.oid)" plain>详情</el-button>
+									</p>
+									<p v-if="temp.row.wstate==2">
+										<el-button type="danger" plain @click="showDialog2(temp.row.oid,temp.row.crew,temp.row.rework)">返工</el-button>
+										<el-button type="primary" @click="showDialog(temp.row.oid)" plain>详情</el-button>
+									</p>
+								</template>
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24" style="margin-top: 50px;">
+					<el-pagination v-if="pageInfo.total!=0" :background="true" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.pageNum" :page-size="pageInfo.pageSize" :total="pageInfo.total" :page-sizes="[1,3,6]" layout="total, sizes, prev, pager, next, jumper">
+					</el-pagination>
+				</el-col>
+			</el-row>
+			<!--订单详情-->
+			<el-dialog :destroy-on-close="true" @opened="handlOpen" title="订单明细" :visible.sync="isShow" :before-close="handleClose" center>
+				<div id="modalcnt" style="height: 600px;"></div>
+			</el-dialog>
+			
+			<!--竣工页面-->
+			<el-dialog :destroy-on-close="true" title="竣工返工" @opened="handlOpen2" :visible.sync="isShow2" :before-close="handleClose2" center>
+				<div id="modalcnt2" style="height: 600px;">
+					
+				</div>
+			</el-dialog>
+		</div>
+	</body>
+	<script>
+		var appjgjy = new Vue({
+			el: "#appjgjy",
+			data: {
+				//订单详情
+				isShow: false,
+				//点击正在维修
+				isShow2: false,
+				id: 0,
+				pageInfo: {}
+			},
+			methods: {		
+				showDialog(oid) {
+					this.isShow = true;
+					sessionStorage.setItem('oid', oid);
+				},
+				handlOpen() {
+					$("#modalcnt").load('jgjyxq.html');
+				},
+				handleClose(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+				},
+				
+				//打开竣工返工页面
+				showDialog2(oid, crew, rework) {
+					this.isShow2 = true;
+					sessionStorage.setItem('oid', oid);
+					sessionStorage.setItem('crew', crew);
+					sessionStorage.setItem('rework', rework);
+				},
+				handlOpen2() {
+					$("#modalcnt2").load('jgfg.html');
+				},
+				handleClose2(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+				},
+				
+				
+				//分页
+				handleSizeChange(val) {
+					this.goToPage(this.pageInfo.pageNum, val);
+				},
+				handleCurrentChange(val) {
+					this.goToPage(val, this.pageInfo.pageSize);
+				},
+				goToPage(p, s) {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/order/${p}/${s}`, function(pg) {
+						_this.pageInfo = pg;
+					});
+				}
+			},
+			mounted() {
+				this.goToPage(1, 3);
+			}
+		});
+	</script>
+
+</html>

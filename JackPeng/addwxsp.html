@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style>
+			.demo-table-expand {
+				font-size: 0;
+			}
+			
+			.demo-table-expand label {
+				width: 90px;
+				color: #99a9bf;
+			}
+			
+			.demo-table-expand .el-form-item {
+				margin-right: 0;
+				margin-bottom: 0;
+				width: 50%;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="addwxsp">
+			<el-row>
+				<el-col :span="8" :offset="10">
+					<template>
+						<el-select v-model="Goods.gid" placeholder="请选择">
+							<el-option v-for="item in Goods" @click.native="queryByid(item.gid)" :value="item.gname">
+							</el-option>
+						</el-select>
+					</template>
+				</el-col>
+			</el-row>
+
+			<template>
+				<el-table :data="Good" style="width: 100%">
+					<el-table-column type="expand">
+						<template slot-scope="props">
+							<el-form label-position="left" inline class="demo-table-expand">
+								<el-form-item label="厂商地址">
+									<span>{{ props.row.gaddress}}</span>
+								</el-form-item>
+								<el-form-item label="厂商名称">
+									<span>{{ props.row.gsupplier}}</span>
+								</el-form-item>
+								<el-form-item label="库存">
+									<span>{{ props.row.ginventory}}</span>
+								</el-form-item>
+							</el-form>
+						</template>
+					</el-table-column>
+					<el-table-column label="商品编号" width="100">
+						<template slot-scope="temp">
+							{{temp.$index+1}}
+						</template>
+					</el-table-column>
+					<el-table-column label="商品名称" prop="gname" width="180">
+					</el-table-column>
+					<el-table-column label="商品价格(元)" prop="gprice" width="180">
+					</el-table-column>
+					<el-table-column label="添加数量" width="200">
+						<template slot-scope="temp">
+							<el-input-number v-if="temp.row.ginventory==0" :disabled="true" v-model="details.detailscount" @change="handleChange" controls-position="right" :min="1" :max="temp.row.ginventory"></el-input-number>
+							<el-input-number v-if="temp.row.ginventory>0" v-model="details.detailscount" @change="handleChange" controls-position="right" :min="1" :max="temp.row.ginventory"></el-input-number>
+						</template>
+					</el-table-column>
+					<el-table-column label="操作" width="100">
+						<template slot-scope="temp">
+							<el-button type="primary" icon="el-icon-circle-plus" @click="add(temp.row.gname,temp.row.gprice,temp.row.gid)" circle></el-button>
+						</template>
+					</el-table-column>
+				</el-table>
+			</template>
+		</div>
+	</body>
+	<script>
+		var addwxsp = new Vue({
+			el: "#addwxsp",
+			data: {
+				Goods: [],
+				Good: [],
+				details: {
+					oid: '',
+					detailsname: '',
+					detailsprice: '',
+					detailsdate: 0,
+					detailscount: 1
+				},
+			},
+			mounted() {
+				this.querys()
+			},
+			methods: {
+				add(gname, gprice,gid) {
+					if(this.Good[0].ginventory == 0) {
+						this.$message.error('库存不足');
+						return;
+					}
+					let _this=this;
+					let oid = sessionStorage.getItem('ooid');
+					this.details.oid=oid;	
+					this.details.detailsname = gname;
+					this.details.detailsprice = gprice;
+					$.ajax(`http://localhost:8080/api/detailsbiz/adds/details/${gid}`, {
+						type: 'post',
+						data: JSON.stringify(_this.details),
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '添加成功'
+								});
+							} else {
+								_this.$message({
+									type: 'warning',
+									message: '不可重复添加'
+								});
+							}
+						}
+					});
+
+				},
+				queryByid(gid) {
+					this.details.detailscount=0;
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/goods/good/${gid}`, function(person) {
+						_this.Good = person;
+					});
+				},
+				querys() {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/goods/good`, function(list) {
+						_this.Goods = list;
+					});
+				},
+				handleChange(value) {
+					if(value == this.Good[0].ginventory) {
+						this.$message({
+							message: '已达到库存上线',
+							type: 'warning'
+						});
+					}
+					console.log(value);
+				}
+			}
+		})
+	</script>
+
+</html>

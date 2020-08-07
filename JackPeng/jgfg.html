@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="jgfg">
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-tabs v-model="activeName">
+							<el-tab-pane label="竣工" name="first">
+								<el-row>
+									<el-col :span="8" :offset="8">
+										<h2 style="color: red;">竣工后将无法修改,请谨慎操作</h2>
+									</el-col>
+								</el-row>
+								<el-row style="margin-top: 100px;">
+									<el-col :span="2" :offset="11">
+										<el-button type="primary" plain @click="jgjyupdate">竣工</el-button>
+									</el-col>
+								</el-row>
+							</el-tab-pane>
+							<el-tab-pane label="返工" name="second">
+								<el-row>
+									<el-col :span="8" :offset="8">
+										<div>
+											<el-button type="info" round @click="choose(1)">乙方原因</el-button>
+											<el-button type="warning" round @click="choose(2)">客户原因</el-button>
+										</div>
+									</el-col>
+								</el-row>
+
+								<div v-show="isShow3">
+									<el-row>
+										<el-col :span="8" :offset="8">
+											<p>此订单返工次数:<span style="color: red;">{{rework}}</span></p>
+										</el-col>
+									</el-row>
+									<el-form :inline="true" class="demo-form-inline">
+										<el-row style="margin-top: 10px;">
+											<el-col :span="12" :offset="6">
+												<el-form-item label="返工原因">
+													<el-input v-model="reworkreason" :rows="2" placeholder="请输入内容">
+													</el-input>
+												</el-form-item>
+											</el-col>
+										</el-row>
+										<el-row style="margin-top: 10px;">
+											<el-col :span="12" :offset="6">
+												<el-form-item label="负责人">
+													<el-input v-model="crew"></el-input>
+												</el-form-item>
+											</el-col>
+										</el-row>
+										<el-row style="margin-top: 10px;">
+											<el-col :span="12" :offset="6">
+												<el-form-item label="处罚金额">
+													<el-input v-model="penaltyamount"></el-input>
+												</el-form-item>
+											</el-col>
+										</el-row>
+									</el-form>
+									<el-row>
+										<el-col :span="4" :offset="20">
+											<el-button type="primary" plain @click="confirm">确认</el-button>
+										</el-col>
+									</el-row>
+								</div>
+								<div v-show="isShow4">
+									<el-row style="margin-top: 10px;">
+										<el-col :span="8">
+											<el-form :inline="true" class="demo-form-inline">
+												<el-form-item label="负责人">
+													<el-input v-model="crew"></el-input>
+												</el-form-item>
+										</el-form>
+										</el-col>
+										<el-col :span="4">
+											<p style="color: red;">返工费:<span>{{reworkcost}}</span>元</p>
+										</el-col>
+										<el-col :span="6" :offset="6">
+											 <el-button type="primary" @click="accomplish">确定</el-button>
+										</el-col>
+									</el-row>
+									<el-row>
+										<el-col :span="22" :offset="1" style="border: 1px;">
+											<el-tabs type="border-card">
+												<el-tab-pane label="维修项目">
+													<el-button type="success" @click="showDialog5">添加维修项目</el-button>
+													<template>
+														<el-table :data="details" style="width: 100%;height: 350px;">
+															<el-table-column label="项目编码" width="140">
+																<template slot-scope="temp">
+																	{{temp.$index+1}}
+																</template>
+															</el-table-column>
+															<el-table-column label="项目名称" width="140" prop="detailsname">
+															</el-table-column>
+															<el-table-column label="项目金额" width="140" prop="detailsprice">
+															</el-table-column>
+															
+															<el-table-column label="数量" width="140" prop="detailscount">
+																<template slot-scope="temp">
+																	<p v-if="temp.row.detailscount==0">一套</p>
+																	<p v-if="temp.row.detailscount>0">{{temp.row.detailscount}}</p>
+																</template>
+															</el-table-column>
+															<el-table-column label="操作" width="140">
+																<template slot-scope="temp">
+																	<el-button type="primary" @click="deldeta(temp.row.detailsid)" icon="el-icon-delete"  circle></el-button>
+																</template>
+															</el-table-column>
+														</el-table>
+													</template>
+												</el-tab-pane>
+												<el-tab-pane label="维修材料">
+													<el-button type="success" @click="showDialog2">添加维修材料</el-button>
+
+												</el-tab-pane>
+											</el-tabs>
+										</el-col>
+									</el-row>
+								</div>
+							</el-tab-pane>
+						</el-tabs>
+					</template>
+				</el-col>
+			</el-row>
+			<!--添加维修项目模态框-->
+			<el-dialog :destroy-on-close="true" @opened="handlOpen5" title="维修项目" :visible.sync="isShow5" :before-close="handleClose5" center>
+				<div id="modalcnt1" style="height: 600px;"></div>
+			</el-dialog>
+			<!--添加维修商品模态框-->
+			<el-dialog :destroy-on-close="true" @opened="handlOpen2" title="维修项目" :visible.sync="isShow2" :before-close="handleClose2" center>
+				<div id="modalcnt6" style="height: 600px;border: 1px;"></div>
+			</el-dialog>
+		</div>
+		<script>
+			var jgfg = new Vue({
+				el: "#jgfg",
+				data: {
+					//完工时间
+					finishtime:new Date(),
+					//返工总价格
+					totalPrice: 0,
+					upsums:0,
+					//返工费
+					reworkcost:100,
+					//订单编号
+					oid:'',
+					//返工次数
+					rework: 0,
+					//处罚金额
+					penaltyamount: 0,
+					//返工原因
+					reworkreason: '',
+					//负责人
+					crew: '',
+					activeName: 'first',
+					//维修项目结果集
+					details: [],
+					isShow2: false,
+					isShow3: false,
+					isShow4: false,
+					isShow5: false
+				},
+				mounted() {
+					let crew = sessionStorage.getItem('crew');
+					let rework = sessionStorage.getItem('rework');
+					let oid = sessionStorage.getItem('oid');
+					this.oid=oid;
+					this.crew = crew;
+					this.rework = rework;
+					this.querydeta();
+				},
+				methods: {
+				//求总价格
+				sums() {
+					for(let i = 0; i < this.details.length; i++) {
+						if(this.details[i].detailscount == 0) {
+							this.totalPrice += this.details[i].detailsprice
+						} else {
+							this.totalPrice += (this.details[i].detailsprice * this.details[i].detailscount);
+						}
+					}
+						let _this=this;
+					this.upsums = this.totalPrice + this.reworkcost;
+				},
+					
+				accomplish(){
+						let oid = sessionStorage.getItem('oid');
+						let _this=this;
+						$.ajax(`http://localhost:8080/api/detailsbiz/updateprice/${oid}/${_this.upsums}/${_this.reworkcost}`, {
+						type: 'post',
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '反工成功'
+								});
+								_this.goBack();
+							}
+						}
+					});
+				},
+					//根据商品id删除
+				deldeta(detailsId) {
+					let _this = this;
+					$.ajax(`http://localhost:8080/api/detailsbiz/${detailsId}`, {
+						type: 'delete',
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '删除成功'
+								});
+								_this.querydeta();
+								_this.sums();
+							}
+						}
+					});
+				},
+					//根据订单编号查询维修项目
+				querydeta() {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/detailsbiz/state/${_this.oid}`, function(person) {
+						_this.details = person;
+						_this.sums();
+					});
+				},
+					goBack() {
+						app.showView('jgjy.html'); //调用主页的vm引擎方法,跳页面
+						appjgjy.isShow2 = false;
+					},
+					jgjyupdate() {
+						let oid = sessionStorage.getItem('oid');
+						let _this = this;
+						this.$confirm('是否竣工').then(() => {
+							$.ajax(`http://localhost:8080/api/order/${oid}`, {
+								type: 'put',
+								dataType: 'json',
+								contentType: 'application/json',
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											type: 'success',
+											message: '竣工成功'
+										});
+										_this.goBack();
+									}
+								}
+							});
+						}).catch(() => {});
+					},
+					//己方原因
+					confirm() {
+						let oid = sessionStorage.getItem('oid');
+						let _this = this;
+						$.ajax(`http://localhost:8080/api/order/update/${oid}/${_this.crew}/${_this.penaltyamount}/${_this.reworkreason}`, {
+							type: 'put',
+							dataType: 'json',
+							contentType: 'application/json',
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										type: 'success',
+										message: '返工成功'
+									});
+									_this.goBack();
+
+								}
+							}
+						});
+					},
+					//放工是来判断是乙方原因还是客户原因
+					choose(state) {
+						if(state == '1') {
+							this.isShow3 = true;
+							this.isShow4 = false;
+						} else if(state == '2') {
+							this.isShow3 = false;
+							this.isShow4 = true;
+						}
+					},
+					//打开维修项目模态框
+					showDialog5() {
+						this.isShow5 = true;
+					},
+					handlOpen5() {
+						$("#modalcnt1").load('wxxm2.html');
+					},
+					handleClose5(done) {
+						this.$confirm('是否关闭').then(() => {
+							done();
+						}).catch(() => {});
+						this.querydeta();
+					},
+					showDialog2() {
+						let oid = sessionStorage.getItem('oid');
+						this.isShow2 = true;
+						sessionStorage.setItem('ooid', oid);
+					},
+					handlOpen2() {
+						$("#modalcnt6").load('wxsp2.html');
+					},
+					handleClose2(done) {
+						this.$confirm('是否关闭').then(() => {
+							done();
+						}).catch(() => {});
+						this.querydeta();
+					},
+				}
+			})
+		</script>
+	</body>
+
+</html>

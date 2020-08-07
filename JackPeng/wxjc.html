@@ -13,7 +13,7 @@
 		<div id="appwxjc">
 			<el-row>
 				<el-col :span="2" :offset="6">
-					<p>选择账单：</p>
+					<p>订单：</p>
 				</el-col>
 				<el-col :span="4">
 					<template>
@@ -30,17 +30,41 @@
 				</el-col>
 			</el-row>
 			<el-row>
-				<el-col :span="24">
+				<el-col :span="15" :offset="3" style="margin-top: 100px;">
 					<template>
-						<el-table style="width: 100%">
-							<el-table-column label="日期" width="180">
+						<el-table style="width: 100%" :data="this.pageInfo.list">
+							<el-table-column label="编号" width="120">
+								<template slot-scope="temp">
+									{{temp.$index+1}}
+								</template>
 							</el-table-column>
-							<el-table-column label="姓名" width="180">
+							<el-table-column label="订单编号" prop="oid" width="180">
 							</el-table-column>
-							<el-table-column label="地址">
+							<el-table-column label="车牌号" prop="olicense" width="180">
+							</el-table-column>
+							<el-table-column label="维修人员/班组" prop="crew" width="180">
+							</el-table-column>
+							</el-table-column>
+							<el-table-column label="维修时间" prop="odatetime" width="180">
+							</el-table-column>
+							<el-table-column label="订单状态" width="180">
+								<template slot-scope="temp">
+									<p v-if="temp.row.wstate==0">
+										<el-button type="primary" plain>正在维修</el-button>
+									</p>
+									<p v-if="temp.row.wstate==2">
+										<el-button type="danger" plain>返工中</el-button>
+									</p>
+								</template>
 							</el-table-column>
 						</el-table>
 					</template>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24" style="margin-top: 50px;">
+					<el-pagination v-if="pageInfo.total!=0" :background="true" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.pageNum" :page-size="pageInfo.pageSize" :total="pageInfo.total" :page-sizes="[1,3,6]" layout="total, sizes, prev, pager, next, jumper">
+					</el-pagination>
 				</el-col>
 			</el-row>
 		</div>
@@ -49,12 +73,29 @@
 		var appwxjc = new Vue({
 			el: "#appwxjc",
 			data: {
-				id: ''
+				id: '',
+				pageInfo: {}
 			},
 			methods: {
+				handleSizeChange(val) {
+					this.goToPage(this.pageInfo.pageNum, val);
+				},
+				handleCurrentChange(val) {
+					this.goToPage(val, this.pageInfo.pageSize);
+				},
+
 				showView() {
 					$('#cnt').load('znjc.html');
+				},
+				goToPage(p, s) {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/order/${p}/${s}`, function(pg) {
+						_this.pageInfo = pg;
+					});
 				}
+			},
+			mounted() {
+				this.goToPage(1, 3);
 			}
 		});
 	</script>

@@ -64,11 +64,15 @@
 									</el-menu-item-group>
 									
 								</el-submenu>
-								<el-menu-item index="1">
-									<i class="el-icon-menu"></i>
+								<el-menu-item index="2">
+									<i class="el-icon-setting"></i>
 									<span slot="title"  @click="showView('wxjc.html')">维修接车</span>
 								</el-menu-item>	
-							</el-menu>
+								<el-menu-item index="1">
+									<i class="el-icon-tickets"></i>
+									<span slot="title" @click="showView('jgjy.html')">竣工检验</span>
+								</el-menu-item>	
+							</el-menu> 
 						</el-col>
 					</el-aside>
 					<el-container>

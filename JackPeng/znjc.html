@@ -20,7 +20,7 @@
 										</el-input>
 									</el-col>
 									<el-col :span="8" :offset="2">
-										<el-input placeholder="请输入内容" v-model="order.oremark" >
+										<el-input placeholder="请输入内容" v-model="order.oremark">
 											<template slot="prepend">备注</template>
 										</el-input>
 									</el-col>
@@ -29,7 +29,14 @@
 											<el-col :span="16" :offset="4">
 												<el-form label-width="100px">
 													<el-form-item label="维修人员:">
-														<el-cascader :options="options" v-model="order.crew" :show-all-levels="false"></el-cascader>
+														<template>
+															<el-select v-model="order.crew" placeholder="请选择">
+																<el-option-group v-for="group in teams" :key="group.teamsname" :label="group.teamsname">
+																	<el-option @click.native="queryByPrice(item.mecprice)" v-for="item in group.mechanic" :key="item.mecname" :label="item.mecname" :value="item.mecname">
+																	</el-option>
+																</el-option-group>
+															</el-select>
+														</template>
 													</el-form-item>
 												</el-form>
 											</el-col>
@@ -39,7 +46,7 @@
 								</el-row>
 								<el-row>
 									<el-col :span="6">
-										<el-input placeholder="联系电话"  v-model="order.ophone">
+										<el-input placeholder="联系电话" v-model="order.ophone">
 											<template slot="prepend">联系电话</template>
 										</el-input>
 									</el-col>
@@ -50,8 +57,8 @@
 									</el-col>
 									<el-col :span="4" :offset="4">
 										<el-form label-width="80px" @submit.native.prevent>
-											<el-form-item label="车牌号：">
-												<el-input v-model="order.olicense" @keyup.enter.native="doLogin" ></el-input>
+											<el-form-item label="车牌号:">
+												<el-input v-model="order.olicense" @keyup.enter.native="doLogin"></el-input>
 											</el-form-item>
 										</el-form>
 									</el-col>
@@ -71,18 +78,34 @@
 										<el-button type="primary" round @click="showDialog">添加维修项目</el-button>
 									</el-col>
 									<el-col :span="2" :offset="1">
-										<el-button type="primary" round>添加维修商品</el-button>
+										<el-button type="primary" round @click="showDialog2">添加维修商品</el-button>
 									</el-col>
 								</el-row>
 								<el-row>
 									<el-col :span="18" style="margin-top: 60px;" :offset="3">
 										<template>
-											<el-table style="width: 100%;height: 400px;">
-												<el-table-column label="日期" width="180">
+											<el-table :data="details" style="width: 100%;height: 400px;">
+												<el-table-column label="项目编码" width="120">
+													<template slot-scope="temp">
+														{{temp.$index+1}}
+													</template>
 												</el-table-column>
-												<el-table-column label="姓名" width="180">
+												<el-table-column label="项目名称" width="180" prop="detailsname">
 												</el-table-column>
-												<el-table-column label="地址">
+												<el-table-column label="项目金额" width="180" prop="detailsprice">
+												</el-table-column>
+												<el-table-column label="预计时间" width="180" prop="detailsdate">
+												</el-table-column>
+												<el-table-column label="数量" width="100" prop="detailscount">
+													<template slot-scope="temp">
+														<p v-if="temp.row.detailscount==0">一套</p>
+														<p v-if="temp.row.detailscount>0">{{temp.row.detailscount}}</p>
+													</template>
+												</el-table-column>
+												<el-table-column label="操作" width="180">
+													<template slot-scope="temp">
+														<el-button type="primary" icon="el-icon-delete" circle @click="deldeta(temp.row.detailsid)"></el-button>
+													</template>
 												</el-table-column>
 											</el-table>
 										</template>
@@ -91,13 +114,15 @@
 								</el-row>
 								<el-row>
 									<el-col :span="2">
-										<p>维修人员<span>王五</span></p>
+										<p>维修人员:<span style="color: red;">{{order.crew}}</span></p>
 									</el-col>
-									<el-col :span="2" :offset="6">
-										<p>维修时新<span>50</span></p>
+
+									<el-col :span="2" :offset="8">
+										<p>技工费用:<span style="color: red;">{{this.mecprice}}</span></p>
 									</el-col>
-									<el-col :span="4" :offset="10">
-										<p>订单总金额<span>300</span></p>
+
+									<el-col :span="4" :offset="8">
+										<p>订单总金额:<span style="color: red;">{{order.sums}}</span></p>
 									</el-col>
 								</el-row>
 								<el-row>
@@ -112,15 +137,26 @@
                             	时间：2020-07-28
                             	描述：站外页面
                             -->
-							<el-tab-pane label="站外维修" name="second">配置管理</el-tab-pane>
+							<el-tab-pane label="站外维修" name="second">
+								
+								<el-button type="primary" @click="themap">打开地图</el-button>
+							</el-tab-pane>
 
 						</el-tabs>
 					</template>
 				</el-col>
 			</el-row>
-			<!--模态框-->
+			<!--添加维修项目模态框-->
 			<el-dialog :destroy-on-close="true" @opened="handlOpen" title="维修项目" :visible.sync="isShow" :before-close="handleClose" center>
 				<div id="modalcnt" style="height: 600px;"></div>
+			</el-dialog>
+			<!--添加维修商品模态框-->
+			<el-dialog :destroy-on-close="true" @opened="handlOpen2" title="维修项目" :visible.sync="isShow2" :before-close="handleClose2" center>
+				<div id="modalcnt1" style="height: 600px;"></div>
+			</el-dialog>
+			<!--打开地图-->
+			<el-dialog :destroy-on-close="true" @opened="handlOpen3" title="选择地点" :visible.sync="isShow3" :before-close="handleClose3" center>
+				<iframe src="百度地图.html" width="100%" height="500px"></iframe>
 			</el-dialog>
 		</div>
 	</body>
@@ -128,59 +164,143 @@
 		var appznjc = new Vue({
 			el: "#appznjc",
 			data: {
-				order:{
-					oid:'',
-					settlementid:0,
-					ostate:0,
-					ovehicle:'',
-					oremark:'',
-					crew:'',
-					olicense:'',
-					ophone:'',
-					oname:'',
-					obrand:'',
-					omodel:'',
-					sums:18,
-					odate:'',
-					wstate:0,
-					finishtime:'',
-					rework:0,
-					cause:0
-				},			
+				//技工费
+				mecprice: 0,
+				totalPrice: 0,
+				//维修项目结果集
+				details: [],
+				teams: [],
+				order: {
+					oid: '',
+					settlementid: 0,
+					ostate: 0,
+					ovehicle: '',
+					oremark: '',
+					crew: '',
+					odatetime: new Date(),
+					olicense: '',
+					ophone: '',
+					oname: '',
+					obrand: '',
+					omodel: '',
+					sums: 0,
+					odate: '',
+					wstate: 0,
+					finishtime: '',
+					rework: 0,
+					cause: 0
+				},
 				isShow: false,
+				isShow2: false,
+				//打开地图
+				isShow3:false,
 				activeName: 'first',
-				options: [{
-					label: '维修班组1号',
-					children: [{
-						label: '天天'
-					}, {
-						label: '美美'
-					}]
-				}]
+
 			},
 			mounted() {
 				this.querys();
-				this.createCode()
+				this.createCode();
 			},
 			methods: {
-				querys(){
-						let _this=this;
-						$.getJSON(`http://localhost:8080/api/teams/querys`, function(person) {
-							alert(person)
-						});
+				//打开地图
+				themap(){
+					this.isShow3 = true;
 				},
-				  doLogin() {
- 			 			let _this=this;
-						$.getJSON(`http://localhost:8080/api/weixiu/queryByid/${_this.order.olicense}`, function(person) {
-							_this.order.ophone = person.dphone;
-							_this.order.oname=person.pilot;
-							_this.order.obrand=person.dbrand;
-							_this.order.omodel=person.dsignal;
-						});
-  				  },
-				
+				handlOpen3() {
+					
+				},
+				handleClose3(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+				},
+				//选出技工价格
+				queryByPrice(price) {
+					this.mecprice = price;
+					this.sums();
+				},
+				//求总价格
+				sums() {
+					this.totalPrice = 0;
+					for(let i = 0; i < this.details.length; i++) {
+						if(this.details[i].detailscount == 0) {
+							this.totalPrice += this.details[i].detailsprice
+						} else {
+							this.totalPrice += (this.details[i].detailsprice * this.details[i].detailscount);
+						}
+
+					}
+					this.order.sums = this.totalPrice + this.mecprice;
+				},
+				//根据商品id删除
+				deldeta(detailsId) {
+					let _this = this;
+					$.ajax(`http://localhost:8080/api/detailsbiz/${detailsId}`, {
+						type: 'delete',
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '删除成功'
+								});
+								_this.querydeta();
+								_this.sums();
+							}
+						}
+					});
+				},
+				//根据订单编号查询
+				querydeta() {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/detailsbiz/${_this.order.oid}`, function(person) {
+						_this.details = person;
+						_this.sums();
+					});
+				},
+				//查询维修人员
+				querys() {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/teams/querys`, function(person) {
+						_this.teams = person;
+					});
+				},
+				//通过车牌查询车主信息
+				doLogin() {
+					let _this = this;
+					$.ajax(`http://localhost:8080/api/weixiu/queryByid/${_this.order.olicense}`, {
+						type: 'get',
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "300") {
+								_this.$message({
+									type: 'warning',
+									message: '此车正在维修中'
+								});
+							} else if(message.code = "200") {
+								_this.order.ophone = message.zhi.dphone;
+								_this.order.oname = message.zhi.pilot;
+								_this.order.obrand = message.zhi.dbrand;
+								_this.order.omodel = message.zhi.dsignal;
+							}
+						}
+					});
+
+					/*
+					$.getJSON(`http://localhost:8080/api/weixiu/queryByid/${_this.order.olicense}`, function(person) {
+						_this.order.ophone = person.dphone;
+						_this.order.oname = person.pilot;
+						_this.order.obrand = person.dbrand;
+						_this.order.omodel = person.dsignal;
+					});
+					*/
+				},
+
 				showDialog() {
 					this.isShow = true;
+					sessionStorage.setItem('oid', this.order.oid);
 				},
 				handlOpen() {
 					$("#modalcnt").load('addwxxm.html');
@@ -189,9 +309,45 @@
 					this.$confirm('是否关闭').then(() => {
 						done();
 					}).catch(() => {});
+					this.querydeta();
 				},
+
+				showDialog2() {
+					this.isShow2 = true;
+					sessionStorage.setItem('ooid', this.order.oid);
+				},
+				handlOpen2() {
+					$("#modalcnt1").load('addwxsp.html');
+				},
+				handleClose2(done) {
+					this.$confirm('是否关闭').then(() => {
+						done();
+					}).catch(() => {});
+					this.querydeta();
+				},
+				//生成订单
 				add() {
-					alert("123")
+					let _this = this;
+					$.ajax('http://localhost:8080/api/weixiu/order', {
+						type: 'post',
+						data: JSON.stringify(_this.order),
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '订单生成成功'
+								});
+								app.showView('wxjc.html'); //调用主页的vm引擎方法,跳页面
+							} else {
+								_this.$message({
+									type: 'warning',
+									message: '出现预期之外的错误'
+								});
+							}
+						}
+					});
 				},
 				handleClick(tab, event) {
 					console.log(tab, event);

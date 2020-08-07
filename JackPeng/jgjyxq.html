@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+
+	<body>
+		<div id="appjgjyxq">
+			<el-row>
+				<el-col :span="18">
+					<el-row>
+						<el-col :span="8">
+							<p>订单编号:<span>{{order.oid}}</span></p>
+						</el-col>
+						<el-col :span="8">
+							<p>维修人员:<span>{{order.crew}}</span></p>
+						</el-col>
+						<el-col :span="8">
+							<p>维修车牌号:<span>{{order.olicense}}</span></p>
+						</el-col>
+					</el-row>
+					<el-row>
+						<el-col :span="8">
+							<p>客户电话:<span>{{order.ophone}}</span></p>
+						</el-col>
+						<el-col :span="8">
+							<p>客户姓名:<span>{{order.oname}}</span></p>
+						</el-col>
+						<el-col :span="8">
+							<p>维修车型:<span>{{order.omodel}}</span></p>
+						</el-col>
+					</el-row>
+					<el-row>
+						<el-col :span="8">
+							<p>下单时间:<span>{{order.odatetime}}</span></p>
+						</el-col>
+						<el-col :span="8">
+							<p>总金额:<span>{{order.sums}}</span></p>
+						</el-col>
+						<el-col :span="8">
+							<p>维修结束时间:<span v-if="order.finishtime==null">目前还未维修完成</span><span v-if="order.finishtime!=null">{{order.finishtime}}</span></p>
+
+						</el-col>
+					</el-row>
+				</el-col>
+				<el-col :span="6">
+					<p>备注:<span>{{order.oremark}}</span></p>
+				</el-col>
+			</el-row>
+			<el-row style="margin-top: 20px;">
+				<el-col :span="8" :offset="10">
+					<h3>维修项目和维修所需的商品</h3>
+				</el-col>
+			</el-row>
+			<el-row>
+				<el-col :span="24">
+					<template>
+						<el-table :data="order.details" style="width: 100%;height: 400px;">
+							<el-table-column label="项目编码" width="120">
+								<template slot-scope="temp">
+									{{temp.$index+1}}
+								</template>
+							</el-table-column>
+							<el-table-column label="项目名称" width="180" prop="detailsname">
+							</el-table-column>
+							<el-table-column label="项目金额" width="180" prop="detailsprice">
+							</el-table-column>
+							<el-table-column label="预计时间" width="180" prop="detailsdate">
+							</el-table-column>
+							<el-table-column label="数量" width="100" prop="detailscount">
+								<template slot-scope="temp">
+									<p v-if="temp.row.detailscount==0">一套</p>
+									<p v-if="temp.row.detailscount>0">{{temp.row.detailscount}}</p>
+								</template>
+							</el-table-column>
+						</el-table>
+					</template>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script>
+		var appjgjyxq = new Vue({
+			el: "#appjgjyxq",
+			data: {
+				order: {}
+			},
+			methods: {
+				queryorder() {
+					let oid = sessionStorage.getItem('oid');
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/order/${oid}`, function(person) {
+						_this.order = person;
+					});
+					
+				}
+			},
+			mounted() {
+				this.queryorder();
+			}
+		})
+	</script>
+
+</html>
