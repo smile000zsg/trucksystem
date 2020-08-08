@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>发动机新增</title>
+	</head>
+	<body>
+		<div id="VmEngineadd">
+			<el-form :model="engine" ref="personForm" :rules="personRules" label-width="120px">
+				<el-form-item label="发动机编号" prop="engineNumber">
+					<el-col :span="10">
+						<!--非常重要-->
+						<el-input v-model="engine.engineNumber"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="发动机名称" prop="engineName">
+					<el-col :span="10">
+						<el-input v-model="engine.engineName" placeholder="请输入发动机名称"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" @click="addEngine">保存</el-button>
+					<el-button type="danger" @click="goBack">取消</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+	</body>
+	<script>
+		var VmEngineadd=new Vue({
+			data:{
+				engine:{
+					engineId:'',
+					engineNumber:'',
+					engineName:''
+				},
+				personRules: {
+					engineNumber: [{
+							required: true,
+							message: '发动机编号不能为空',
+							trigger: 'blur' //移除触发
+					}
+					],
+					engineName: [{
+							required: true,
+							message: '请输入发动机名称',
+							trigger: 'blur'
+					}
+					]
+				}				
+			},
+			methods:{
+				goBack(){
+					Vmengine.isShow=false;
+					Vmapp.showView('engine','发动机品牌');
+				},
+				addEngine(){
+					let _this = this;
+					this.$refs['personForm'].validate(valid => {
+						if(valid) {
+							//验证通过
+							//自定义加载块
+							const loading = this.$loading({
+								lock: true,
+								text: '努力更新中....',
+								spinner: 'el-icon-loading',
+								background: 'rgba(0, 0, 0, 0.1)'
+							});
+							//延迟2秒，模拟网络延迟
+							setTimeout(() => {
+								
+								$.ajax('http://localhost:8080/ymj/api/engines/engine', {
+									type: 'post',
+									data: JSON.stringify(this.engine),
+									dataType: 'json',
+									contentType: 'application/json',
+									success(msg) {
+										if(msg.code == "200") {
+											loading.close(); //关闭加载块【非常重要】
+											_this.$message({
+												type: 'success',
+												message: '新增成功'
+											});
+											_this.goBack(); //清除数据
+		
+										}
+									}
+								});
+							}, 2000);
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+				}
+			}
+		}).$mount("#VmEngineadd");
+	</script>
+</html>

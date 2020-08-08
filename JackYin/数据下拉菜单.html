@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>数据</title>
+		<link rel="stylesheet" href="../css/index.css" />
+	</head>
+
+	<body>
+		<div id="Vmshuju">
+			<el-row>
+				<el-col :span="24">
+					<el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" background-color="#FFFFFF" text-color="#000000" active-text-color="#ffd04b">
+						<el-submenu index="1">
+							<template slot="title">
+								<i class="el-icon-location"></i>
+								<span>数据</span>
+							</template>
+							<el-menu-item-group>
+								<template slot="title">主数据</template>
+								<el-menu-item index="1-1" @click="showView('engine','发动机品牌')">发动机品牌</el-menu-item>
+								<el-menu-item index="1-2" @click="showView('Carfile','车型档案')">车型档案</el-menu-item>
+								<el-menu-item index="1-3" @click="showView('系统管理','维修项目')">维修项目</el-menu-item>
+								<el-menu-item index="1-4" @click="showView('系统管理','商品资料')">商品资料</el-menu-item>
+								<el-menu-item index="1-5" @click="showView('系统管理','供货单位')">供货单位</el-menu-item>
+							</el-menu-item-group>
+						</el-submenu>
+					</el-menu>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/jq_ajax_config.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script>
+		var Vmshuju = new Vue({
+			data: {
+
+			},
+			methods: {
+				handleOpen(key, keyPath) {
+					console.log(key, keyPath);
+				},
+				handleClose(key, keyPath) {
+					console.log(key, keyPath);
+				},
+				showView(url,ti){
+					Vmapp.showView(url,ti);
+				}
+			}
+		}).$mount("#Vmshuju");
+	</script>
+
+</html>

@@ -15,19 +15,21 @@
 				</el-col>
 				<el-col :span="20">
 					<el-col :span="5">
-						<el-input placeholder="请输入技工姓名" clearable>
+						<el-input v-model="name" placeholder="请输入技工姓名" clearable>
 						</el-input>
 					</el-col>
 					<el-col :span="5" :offset="1">
-						<el-input placeholder="请输入技工手机" clearable>
+						<el-input v-model="phone" placeholder="请输入技工手机" clearable>
 						</el-input>
 					</el-col>
 					<el-col :span="2" :offset="1">
-						<el-button icon="el-icon-search">搜索</el-button>
+						<el-button @click="query" icon="el-icon-search">搜索</el-button>
 					</el-col>
-					<el-button type="primary" icon="el-icon-user" @click="open1">添加技工</el-button>
-					<el-button type="warning" icon="el-icon-edit" @click="open2">编辑技工</el-button>
-					<el-button type="danger" icon="el-icon-s-release" @click="delMec">移除技工</el-button>
+					<el-col :span="9" :offset="1" style="margin-bottom:20px;">
+						<el-button type="primary" icon="el-icon-user" @click="open1">添加技工</el-button>
+						<el-button type="warning" icon="el-icon-edit" @click="open2">编辑技工</el-button>
+						<el-button type="danger" icon="el-icon-s-release" @click="delMec">移除技工</el-button>
+					</el-col>
 					<el-table highlight-current-row @current-change="handleCurrentChange2" :data="mecList" style="width: 100%">
 						<el-table-column align="center" label="序号" style="width: 30px;">
 							<template slot-scope="temp">
@@ -49,6 +51,11 @@
 						<el-table-column prop="mecborndate" align="center" label="出生日期">
 						</el-table-column>
 						<el-table-column prop="starslevel" align="center" label="技工星级">
+						</el-table-column>
+						<el-table-column prop="mecprice" align="center" label="技工价格">
+							<template slot-scope="temp">
+								￥{{temp.row.mecprice}}
+							</template>
 						</el-table-column>
 					</el-table>
 				</el-col>
@@ -85,6 +92,9 @@
 							<el-option v-for="item in stars" :key="item.starsid" :label="item.starslevel" :value="item.starsid">
 							</el-option>
 						</el-select>
+					</el-form-item>
+					<el-form-item label="技工价格" prop="mecprice">
+						<el-input v-model.number="mechanic.mecprice"></el-input>
 					</el-form-item>
 					<el-form-item label="出生日期">
 						<el-form-item prop="mecborndate">
@@ -129,6 +139,9 @@
 							</el-option>
 						</el-select>
 					</el-form-item>
+					<el-form-item label="技工价格" prop="mecprice">
+						<el-input v-model.number="mechanic2.mecprice"></el-input>
+					</el-form-item>
 					<el-form-item label="出生日期">
 						<el-form-item prop="mecborndate">
 							<el-date-picker type="date" placeholder="选择日期" v-model="mechanic2.mecborndate" style="width: 100%;"></el-date-picker>
@@ -148,6 +161,9 @@
 	<script>
 		var vm = new Vue({
 			data: {
+				name:"",
+				phone:"",
+				teamsid:"",
 				mecList: [],
 				dialogVisible: false,
 				dialogVisible2: false,
@@ -160,7 +176,17 @@
 					mecborndate: '',
 					mecaddress: '',
 					meccard: '',
-					mecprice: ''
+					mecprice: '',
+					mecstate:0
+				},
+				tree:[{
+					teamsname:'All',
+					teams:[]
+				}],
+				defaultProps: {
+					children: 'teams',
+					label: 'teamsname',
+					id:'teamsid'
 				},
 				mechanic2: {},
 				teams: [],
@@ -195,17 +221,38 @@
 						required: true,
 						message: '请选择班组',
 						trigger: 'change'
-					}]
+					}],
+					mecprice:[{
+							required: true,
+							message: '请输入价格',
+							trigger: 'blur'
+						},
+						{
+							type: 'number',
+							message: '价格必须为数字值'
+						}]
 				}
 			},
 			methods: {
+				query(){
+					this.queryAllMec();
+				},
 				queryAllMec() {
 					let _this = this;
-					$.getJSON('http://127.0.0.1:8080/api/TX/mec/queryAllMec', function(data) {
+					$.getJSON('http://127.0.0.1:8080/api/TX/mec/queryAllMec?name='+_this.name+"&phone="+_this.phone+"&teamsid="+_this.teamsid+"", function(data) {
 						_this.mecList = data;
 					});
 				},
-				handleNodeClick(data) {},
+				handleNodeClick(data) {
+					let _this = this;
+					if(data.teamsid==undefined){
+						_this.teamsid="";
+						_this.queryAllMec();
+						return;
+					}
+					_this.teamsid=data.teamsid;
+					_this.queryAllMec();
+				},
 				handleCurrentChange2(val) {
 					if(val == null) {
 						return;
@@ -325,6 +372,9 @@
 				_this.queryAllMec();
 				$.getJSON('http://127.0.0.1:8080/api/TX/teams/queryAllTeams', function(data) {
 					_this.teams = data;
+					for (var i = 0 ;i<_this.teams.length;i++) {
+						_this.tree[0].teams.push(_this.teams[i]);
+					}
 				});
 				$.getJSON('http://127.0.0.1:8080/api/TX/stars/queryAllStars', function(data) {
 					_this.stars = data;

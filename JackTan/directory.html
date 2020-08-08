@@ -22,17 +22,19 @@
 
 	<body>
 		<div id="directory">
-			<el-row>
-				<el-col :span="4" :offset="1">
-					<el-input placeholder="请输入员工姓名"></el-input>
-				</el-col>
-				<el-col :span="2" :offset="1">
-					<el-button icon="el-icon-search">搜索</el-button>
-				</el-col>
-				<el-col :span="4" :offset="10">
-					<el-button type="primary" @click="updateSubmit">保存</el-button>
-					<el-button type="success" @click="exportExcel">导出</el-button>
-				</el-col>
+			<el-row style="margin-bottom:20px;">
+				<el-row>
+					<el-col :span="4">
+						<el-input v-model="name" placeholder="请输入员工姓名"></el-input>
+					</el-col>
+					<el-col :span="2" :offset="1">
+						<el-button @click="query" icon="el-icon-search">搜索</el-button>
+					</el-col>
+					<el-col :span="4" :offset="10">
+						<el-button type="primary" @click="updateSubmit">保存</el-button>
+						<el-button type="success" @click="exportExcel">导出</el-button>
+					</el-col>
+				</el-row>
 			</el-row>
 			<el-table class="tb-edit" highlight-current-row :data="pageInfo.list" style="width: 100%">
 				<el-table-column label="序号" align="center" style="width: 30px;">
@@ -73,7 +75,7 @@
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.currentPage" :page-sizes="[2, 4, 6, 8]" :page-size="pageInfo.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageInfo.total">
+			<el-pagination align="center" style="margin-top:20px;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.currentPage" :page-sizes="[2, 4, 6, 8]" :page-size="pageInfo.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageInfo.total">
 			</el-pagination>
 		</div>
 	</body>
@@ -86,19 +88,23 @@
 		var vm = new Vue({
 			data: {
 				pageInfo: {},
+				name:""
 			},
 			methods: {
-				goToPage(p, s) {
+				query(){
+					this.goToPage(1, 6,this.name);
+				},
+				goToPage(p, s,name) {
 					let _this = this;
-					$.getJSON(`http://127.0.0.1:8080/api/TX/emp/${p}/${s}`, function(data) {
+					$.getJSON('http://127.0.0.1:8080/api/TX/emp/query?p='+p+"&s="+s+"&name="+name+"", function(data) {
 						_this.pageInfo = data;
 					});
 				},
 				handleSizeChange(val) {
-					this.goToPage(this.pageInfo.pageNum, val);
+					this.goToPage(this.pageInfo.pageNum, val,this.name);
 				},
 				handleCurrentChange(val) {
-					this.goToPage(val, this.pageInfo.pageSize);
+					this.goToPage(val, this.pageInfo.pageSize,this.name);
 				},
 				updateSubmit() {
 					let _this = this;
@@ -114,7 +120,7 @@
 									type: 'success'
 								});
 							}
-							_this.goToPage(1, 6);
+							_this.goToPage(1, 6,_this.name);
 						}
 					});
 				},
@@ -154,7 +160,7 @@
 
 			},
 			mounted() {
-				this.goToPage(1, 6);
+				this.goToPage(1, 6,this.name);
 			}
 		}).$mount("#directory");
 	</script>

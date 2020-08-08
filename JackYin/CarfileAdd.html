@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>车辆档案新增</title>
+	</head>
+	<body>
+		<div id="VmCarfileadd">
+			<el-form :model="carfile" ref="personForm" :rules="personRules" label-width="120px">
+				<el-form-item label="车型编号" prop="carfileId">
+					<el-col :span="10">
+						<!--非常重要-->
+						<el-input v-model="carfile.carfileId" :disabled="true"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="车型名称" prop="CarfileName">
+					<el-col :span="10">
+						<el-input v-model="carfile.CarfileName" placeholder="请输入车型名称"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-form-item label="参考价格" prop="carfileprice">
+					<el-col :span="10">
+						<el-input v-model="carfile.carfileprice" placeholder="请输入参考价格"></el-input>
+					</el-col>
+				</el-form-item>
+				<el-select v-model="select" slot="prepend" placeholder="请选择车辆品牌" :data="this.carfileType.list">
+				      <el-option label="engineName" value="engineId"></el-option>
+				</el-select>
+				<el-select v-model="select" slot="prepend" placeholder="请选择发动机品牌" :data="this.engine.list">
+				      <el-option label="carfileTypename" value="carfileTypeid"></el-option>
+				</el-select>
+				<el-form-item>
+					<el-button type="primary" @click="addEngine">保存</el-button>
+					<el-button type="danger" @click="goBack">取消</el-button>
+				</el-form-item>
+			</el-form>
+		</div>
+	</body>
+	<script>
+		var VmCarfileadd=new Vue({
+			data:{
+				carfile:{
+					carfileId:'',
+					carfileTypeid:'',
+					engineTypeid:'',
+					CarfileName:'',
+					carfileprice:''
+				},
+				personRules: {
+					CarfileName: [{
+							required: true,
+							message: '车型编号不能为空',
+							trigger: 'blur' //移除触发
+					}
+					],
+					carfileprice: [{
+							required: true,
+							message: '车辆推荐价格不能为空',
+							trigger: 'blur'
+					}
+					]
+				},
+				carfileType:{},
+				engine:{}
+			},
+			methods:{
+				goBack(){
+					Vmengine.isShow=false;
+					Vmapp.showView('Carfile','车辆档案');
+				},
+				addEngine(){
+					let _this = this;
+					this.$refs['personForm'].validate(valid => {
+						if(valid) {
+							//验证通过
+							//自定义加载块
+							const loading = this.$loading({
+								lock: true,
+								text: '努力更新中....',
+								spinner: 'el-icon-loading',
+								background: 'rgba(0, 0, 0, 0.1)'
+							});
+							//延迟2秒，模拟网络延迟
+							setTimeout(() => {
+								
+								$.ajax('http://localhost:8080/ymj/api/carfiles/carfile', {
+									type: 'post',
+									data: JSON.stringify(this.carfile),
+									dataType: 'json',
+									contentType: 'application/json',
+									success(msg) {
+										if(msg.code == "200") {
+											loading.close(); //关闭加载块【非常重要】
+											_this.$message({
+												type: 'success',
+												message: '新增成功'
+											});
+											_this.goBack(); //清除数据
+		
+										}
+									}
+								});
+							}, 2000);
+						} else {
+							//验证失败
+							this.$alert('请按格式正确填写信息', '系统提示');
+						}
+					});
+				}
+			}
+		}).$mount("#VmCarfileadd");
+	</script>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>客服</title>
+		<link rel="stylesheet" href="../css/index.css" />
+	</head>
+
+	<body>
+		<div id="Vmkefu">
+			<el-row>
+				<el-col :span="24">
+					<el-menu default-active="2" class="el-menu-vertical-demo" @open="handleOpen" @close="handleClose" background-color="#FFFFFF" text-color="#000000" active-text-color="#ffd04b">
+						<el-submenu index="1">
+							<template slot="title">
+								<i class="el-icon-location"></i>
+								<span>客服</span>
+							</template>
+							<el-menu-item-group>
+								<template slot="title">客户档案</template>
+								<el-menu-item index="1-1" @click="showView('系统管理','客服资料')">客服资料</el-menu-item>
+								<el-menu-item index="1-2" @click="showView('系统管理','车辆资料')">车辆资料</el-menu-item>
+							</el-menu-item-group>
+						</el-submenu>
+					</el-menu>
+				</el-col>
+			</el-row>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/jq_ajax_config.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script>
+		var Vmkefu = new Vue({
+			data: {
+
+			},
+			methods: {
+				handleOpen(key, keyPath) {
+					console.log(key, keyPath);
+				},
+				handleClose(key, keyPath) {
+					console.log(key, keyPath);
+				},
+				showView(url,ti){
+					alert('弹出来');
+					Vmapp.showView(url,ti);
+				}
+			}
+		}).$mount("#Vmkefu");
+	</script>
+
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="../css/index.css" />
+		<style type="text/css">
+
+		</style>
+
+	</head>
+
+	<body>
+		<div id="fieldvehicle">
+			<el-form ref="fieldvehicle" :rules="rules" :model="fieldvehicle" label-width="80px">
+				<el-row>
+					<el-col :span="5">
+						<el-form-item label="车牌号" prop="carno">
+							<el-input size="small" placeholder="请输入车牌号" v-model="fieldvehicle.carno"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="5">
+						<el-form-item label="品牌" prop="carbrand">
+							<el-input size="small" placeholder="请输入车品牌" v-model="fieldvehicle.carbrand"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="5">
+						<el-form-item label="车型号"  prop="cartype">
+							<el-input size="small" placeholder="请输入车型号" v-model="fieldvehicle.cartype"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-row>
+				<el-row>
+					<el-col :span="5">
+						<el-form-item label="当前公里" prop="carmilion">
+							<el-input size="small" placeholder="请输入当前公里数" v-model.number="fieldvehicle.carmilion"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="5">
+						<el-form-item label="出勤价格" prop="price">
+							<el-input size="small" placeholder="请输入出勤价格" v-model.number="fieldvehicle.price"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="5">
+						<el-form-item label="班组" prop="teamsid">
+							<el-select v-model="fieldvehicle.teamsid" placeholder="请选择班组">
+								<el-option v-for="item in teams" :key="item.teamsid" :label="item.teamsname" :value="item.teamsid">
+								</el-option>
+							</el-select>
+						</el-form-item>
+					</el-col>
+					<el-col :span="5" :offset="1">
+						<el-button type="primary" @click="add('fieldvehicle')">添加</el-button>
+						<el-button type="info" @click="update('fieldvehicle')">编辑</el-button>
+						<el-button type="danger" @click="del">移除</el-button>
+					</el-col>
+				</el-row>
+			</el-form>
+			<el-table :data="fieldvehicleList" highlight-current-row @current-change="handleCurrentChange2" style="width: 100%">
+				<el-table-column align="center" label="序号">
+					<template slot-scope="temp">
+						{{temp.$index+1}}
+					</template>
+				</el-table-column>
+				<el-table-column prop="carno" align="center" label="车牌号">
+				</el-table-column>
+				<el-table-column prop="carbrand" align="center" label="品牌">
+				</el-table-column>
+				<el-table-column prop="cartype" align="center" label="车型号">
+				</el-table-column>
+				<el-table-column prop="carmilion" align="center" label="当前里程">
+				</el-table-column>
+				<el-table-column prop="price" align="center" label="出勤价格">
+					<template slot-scope="temp">
+						￥{{temp.row.price}}
+					</template>
+				</el-table-column>
+			</el-table>
+		</div>
+	</body>
+	<script type="text/javascript" src="../js/jquery-1.12.4.js"></script>
+	<script type="text/javascript" src="../js/vue.js"></script>
+	<script type="text/javascript" src="../js/index.js"></script>
+	<script type="text/javascript">
+		var vm = new Vue({
+			data: {
+				fieldvehicleList: [],
+				fieldvehicle: {
+					fieldid: "",
+					teamsid: "",
+					carno: "",
+					carbrand: "",
+					cartype: "",
+					carmilion: '',
+					state: 0,
+					price: ''
+				},
+				teams: [],
+				rules: {
+					carno: [{
+						required: true,
+						message: '请输入车牌号',
+						trigger: 'blur'
+					}],
+					carbrand: [{
+						required: true,
+						message: '请输入车品牌',
+						trigger: 'blur'
+					}],
+					cartype: [{
+						required: true,
+						message: '请输入车型号',
+						trigger: 'blur'
+					}],
+					carmilion: [{
+							required: true,
+							message: '请输入公里数',
+							trigger: 'blur'
+						},
+						{
+							type: 'number',
+							message: '联系方式必须为数字值'
+						}
+					],
+					price: [{
+							required: true,
+							message: '请输入出勤价格',
+							trigger: 'blur'
+						},
+						{
+							type: 'number',
+							message: '联系方式必须为数字值'
+						}
+					],
+					teamsid: [{
+						required: true,
+						message: '请选择班组',
+						trigger: 'change'
+					}]
+				}
+			},
+			methods: {
+				handleCurrentChange2(val) {
+					if(val == null) {
+						return;
+					}
+					this.fieldvehicle = val;
+				},
+				queryAll() {
+					let _this = this;
+					$.getJSON('http://127.0.0.1:8080/api/TX/fieldvehicle/query', function(data) {
+						_this.fieldvehicleList = data;
+					});
+				},
+				add(formName) {
+					let _this = this;
+					_this.$refs[formName].validate((valid) => {
+						if(valid) {
+							$.ajax('http://127.0.0.1:8080/api/TX/fieldvehicle/add', {
+								type: "post",
+								data: JSON.stringify(_this.fieldvehicle),
+								dataType: "json",
+								contentType: "application/json",
+								success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '添加车辆成功！',
+											type: 'success'
+										});
+										_this.queryAll();
+									} else {
+										_this.$message({
+											message: '添加车辆失败！',
+											type: 'error'
+										});
+									}
+								}
+							});
+						} else {
+							return false;
+						}
+					});
+				},
+				update(formName) {
+					let _this = this;
+					if(_this.fieldvehicle.fieldid==null || _this.fieldvehicle.fieldid==''){
+						this.$message('请选择需要修改的车辆！');
+						return;
+					}
+					_this.$refs[formName].validate((valid) => {
+						if(valid) {
+							$.ajax('http://127.0.0.1:8080/api/TX/fieldvehicle/update', {
+								type: "put",
+								data: JSON.stringify(_this.fieldvehicle),
+								dataType: "json",
+								contentType: "application/json",
+								success(msg) {
+									if(msg.code == "200") {
+										_this.$message({
+											message: '修改车辆信息成功！',
+											type: 'success'
+										});
+										_this.queryAll();
+									} else {
+										_this.$message({
+											message: '修改车辆信息失败！',
+											type: 'error'
+										});
+									}
+								}
+							});
+						} else {
+							return false;
+						}
+					});
+				},
+				del() {
+					let _this = this;
+					if(_this.fieldvehicle.fieldid==null || _this.fieldvehicle.fieldid==''){
+						this.$message('请选择需要移除的车辆！');
+						return;
+					}
+					if(_this.fieldvehicle.state=='1' || _this.fieldvehicle.state==1){
+						this.$message('该车辆正在出勤中！不可移除！');
+						return;
+					}
+					_this.$confirm('此操作将永久移除该车辆, 是否继续?', '提示', {
+						confirmButtonText: '确定',
+						cancelButtonText: '取消',
+						type: 'warning'
+					}).then(() => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/fieldvehicle/del/${_this.fieldvehicle.fieldid}`, {
+							type: "delete",
+							dataType: "json",
+							contentType: "application/json",
+							success(msg) {
+								if(msg.code == "200") {
+									_this.$message({
+										message: '车辆移除成功！',
+										type: 'success'
+									});
+									_this.queryAll();
+								} else {
+									_this.$message({
+										message: '车辆移除失败！',
+										type: 'error'
+									});
+								}
+							}
+						})
+					}).catch(() => {
+						_this.$message({
+							type: 'info',
+							message: '已取消删除'
+						});
+					});
+				}
+			},
+			mounted() {
+				let _this = this;
+				_this.queryAll();
+				$.getJSON('http://127.0.0.1:8080/api/TX/teams/queryAllTeams', function(data) {
+					_this.teams = data;
+				});
+			}
+		}).$mount("#fieldvehicle");
+	</script>
+
+</html>

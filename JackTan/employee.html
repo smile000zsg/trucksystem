@@ -11,24 +11,27 @@
 		<div id="staff">
 			<el-row>
 				<el-col :span="4">
-					<el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick"></el-tree>
+					<el-tree :data="tree" :props="defaultProps" @node-click="handleNodeClick">
+					</el-tree>
 				</el-col>
 				<el-col :span="20">
 					<el-col :span="5">
-						<el-input placeholder="请输入员工姓名" clearable>
+						<el-input v-model="name" placeholder="请输入员工姓名" clearable>
 						</el-input>
 					</el-col>
 					<el-col :span="5" :offset="1">
-						<el-input placeholder="请输入员工手机" clearable>
+						<el-input v-model="phone" placeholder="请输入员工手机" clearable>
 						</el-input>
 					</el-col>
 					<el-col :span="2" :offset="1">
-						<el-button icon="el-icon-search">搜索</el-button>
+						<el-button icon="el-icon-search" @click="query">搜索</el-button>
 					</el-col>
-					<el-button type="primary" icon="el-icon-user" @click="open">入职办理</el-button>
-					<el-button type="warning" icon="el-icon-edit" @click="open2">修改资料</el-button>
-					<el-button type="danger" icon="el-icon-s-release" @click="resignation">员工离职</el-button>
-					<el-table  highlight-current-row @current-change="handleCurrentChange2" :data="pageInfo.list" style="width: 100%">
+					<el-col :span="9" :offset="1" style="margin-bottom:20px;">
+						<el-button type="primary" icon="el-icon-user" @click="open">入职办理</el-button>
+						<el-button type="warning" icon="el-icon-edit" @click="open2">修改资料</el-button>
+						<el-button type="danger" icon="el-icon-s-release" @click="resignation">员工离职</el-button>
+					</el-col>
+					<el-table highlight-current-row @current-change="handleCurrentChange2" :data="pageInfo.list" style="width: 100%;">
 						<el-table-column label="序号" align="center" style="width: 30px;">
 							<template slot-scope="temp">
 								{{temp.$index+1}}
@@ -57,7 +60,7 @@
 						<el-table-column prop="empcorrectdate" align="center" label="转正日期">
 						</el-table-column>
 					</el-table>
-					<el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.currentPage" :page-sizes="[2, 4, 6, 8]" :page-size="pageInfo.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageInfo.total">
+					<el-pagination style="margin-top:20px;" align="center" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.currentPage" :page-sizes="[2, 4, 6, 8]" :page-size="pageInfo.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageInfo.total">
 					</el-pagination>
 				</el-col>
 
@@ -176,16 +179,19 @@
 	<script type="text/javascript">
 		var vm = new Vue({
 			data: {
-	 			post: [],
-				dept:[],
-				tree:[{
-					deptname:'九郎山总部',
-					dept:[]
+				name: "",
+				phone: "",
+				deptid: "",
+				post: [],
+				dept: [],
+				tree: [{
+					deptname: '九郎山总部',
+					dept: []
 				}],
 				defaultProps: {
 					children: 'dept',
 					label: 'deptname',
-					id:'deptid'
+					id: 'deptid'
 				},
 				pageInfo: {},
 				dialogVisible: false,
@@ -252,12 +258,12 @@
 						message: '请输入身份证号码',
 						trigger: 'blur'
 					}],
-					deptid:[{
+					deptid: [{
 						required: true,
 						message: '请选择部门',
 						trigger: 'change'
 					}],
-					postid:[{
+					postid: [{
 						required: true,
 						message: '请选择岗位',
 						trigger: 'change'
@@ -266,24 +272,36 @@
 			},
 			methods: {
 				handleNodeClick(data) {
-				},
-				goToPage(p, s) {
 					let _this = this;
-					$.getJSON(`http://127.0.0.1:8080/api/TX/emp/${p}/${s}`, function(data) {
+					if(data.deptid == undefined) {
+						_this.deptid = "";
+						_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
+						return;
+					}
+					_this.deptid = data.deptid;
+					_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
+				},
+				query() {
+					let _this = this;
+					_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
+				},
+				goToPage(p, s, name, phone, deptid) {
+					let _this = this;
+					$.getJSON("http://127.0.0.1:8080/api/TX/emp/query?p=" + p + "&s=" + s + "&name=" + name + "&phone=" + phone + "&deptid=" + deptid + "", function(data) {
 						_this.pageInfo = data;
 					});
 				},
 				handleSizeChange(val) {
-					this.goToPage(this.pageInfo.pageNum, val);
+					this.goToPage(this.pageInfo.pageNum, val, this.name, this.phone, this.deptid);
 				},
 				handleCurrentChange(val) {
-					this.goToPage(val, this.pageInfo.pageSize);
+					this.goToPage(val, this.pageInfo.pageSize, this.name, this.phone, this.deptid);
 				},
 				open() {
 					this.dialogVisible = true;
 				},
 				open2() {
-					if(this.employee2.empid==null || this.employee2.empid==""){
+					if(this.employee2.empid == null || this.employee2.empid == "") {
 						this.$message('请选择需要修改资料的员工！');
 						return;
 					}
@@ -304,7 +322,7 @@
 											message: '员工入职成功！',
 											type: 'success'
 										});
-										_this.goToPage(1, 2);
+										_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
 										_this.dialogVisible = false;
 									}
 								}
@@ -330,7 +348,7 @@
 											message: '员工资料修改成功！',
 											type: 'success'
 										});
-										_this.goToPage(1, 2);
+										_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
 										_this.dialogVisible2 = false;
 									}
 								}
@@ -343,32 +361,34 @@
 
 				resignation() {
 					let _this = this;
-					if(_this.employee2.empid==null || _this.employee2.empid==""){
+					if(_this.employee2.empid == null || _this.employee2.empid == "") {
 						_this.$message('请选择离职员工！');
 						return;
 					}
 					_this.$prompt('请输入离职原因', '提示', {
 						confirmButtonText: '确定',
 						cancelButtonText: '取消',
-					}).then(({value}) => {
-						$.ajax(`http://127.0.0.1:8080/api/TX/emp/res/${_this.employee2.empid}/${_this.employee2.deptid}/${value}`,{
+					}).then(({
+						value
+					}) => {
+						$.ajax(`http://127.0.0.1:8080/api/TX/emp/res/${_this.employee2.empid}/${_this.employee2.deptid}/${value}`, {
 							type: "put",
 							dataType: "json",
 							contentType: "application/json",
 							success(msg) {
-									if(msg.code == "200") {
-										_this.$message({
-											message: '员工离职成功！',
-											type: 'success'
-										});
-										_this.goToPage(1, 2);
-									}else{
-										_this.$message({
-											message: '员工离职失败！',
-											type: 'error'
-										});
-									}
+								if(msg.code == "200") {
+									_this.$message({
+										message: '员工离职成功！',
+										type: 'success'
+									});
+									_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
+								} else {
+									_this.$message({
+										message: '员工离职失败！',
+										type: 'error'
+									});
 								}
+							}
 						})
 					}).catch(() => {
 						_this.$message({
@@ -387,13 +407,13 @@
 			},
 			mounted() {
 				let _this = this;
-				_this.goToPage(1, 2);
+				_this.goToPage(1, 2, _this.name, _this.phone, _this.deptid);
 				$.getJSON('http://127.0.0.1:8080/api/TX/post/query', function(data) {
 					_this.post = data;
 				});
 				$.getJSON('http://127.0.0.1:8080/api/TX/dept/query', function(data) {
 					_this.dept = data;
-					for (var i = 0 ;i<_this.dept.length;i++) {
+					for(var i = 0; i < _this.dept.length; i++) {
 						_this.tree[0].dept.push(_this.dept[i]);
 					}
 				});

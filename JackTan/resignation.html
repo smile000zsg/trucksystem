@@ -9,14 +9,14 @@
 
 	<body>
 		<div id="resignation">
-			<el-row>
-				<el-col :span="4" :offset="1">
-					<el-input placeholder="请输入员工姓名"></el-input>
+			<el-row style="margin-bottom:20px;">
+				<el-col :span="4">
+					<el-input v-model="name" placeholder="请输入员工姓名"></el-input>
 				</el-col>
 				<el-col :span="2" :offset="1">
-					<el-button icon="el-icon-search">搜索</el-button>
+					<el-button icon="el-icon-search" @click="query">搜索</el-button>
 				</el-col>
-				<el-col :span="4" :offset="10">
+				<el-col :span="6" :offset="10">
 					<el-button type="primary" @click="rollback">员工复职</el-button>
 					<el-button type="danger" @click="commit">确认离职</el-button>
 				</el-col>
@@ -48,13 +48,17 @@
 	<script type="text/javascript">
 		var vm = new Vue({
 			data: {
+				name:"",
 				resignationList: [],
 				resignation: {}
 			},
 			methods: {
+				query(){
+					this.queryAllRes();
+				},
 				queryAllRes() {
 					let _this = this;
-					$.getJSON('http://127.0.0.1:8080/api/TX/res/query', function(data) {
+					$.getJSON('http://127.0.0.1:8080/api/TX/res/query?name='+_this.name+"", function(data) {
 						_this.resignationList = data;
 					});
 				},
