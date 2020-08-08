@@ -138,8 +138,164 @@
                             	描述：站外页面
                             -->
 							<el-tab-pane label="站外维修" name="second">
-								
-								<el-button type="primary" @click="themap">打开地图</el-button>
+								<el-row>
+									<el-col :span="4">
+										<p>单号:<span>{{order.oid}}</span></p>
+									</el-col>
+									<el-col :span="6">
+										<el-form :inline="true" class="demo-form-inline">
+											<el-form-item label="外派车辆">
+												<template>
+													<el-select v-model="order.ovehicle" placeholder="请选择">
+														<el-option v-for="item in fie" :key="item.carbrand" :label="item.carbrand" :value="item.carbrand">
+														</el-option>
+													</el-select>
+												</template>
+											</el-form-item>
+										</el-form>
+									</el-col>
+									<el-col :span="8">
+										<el-row>
+											<el-col :span="16" :offset="4">
+												<el-form label-width="100px">
+													<el-form-item label="维修人员:">
+														<template>
+															<el-select v-model="order.crew" placeholder="请选择">
+																<el-option-group v-for="group in teams" :key="group.teamsname" :label="group.teamsname">
+																	<el-option @click.native="queryByPrice(item.mecprice)" v-for="item in group.mechanic" :key="item.mecname" :label="item.mecname" :value="item.mecname">
+																	</el-option>
+																</el-option-group>
+															</el-select>
+														</template>
+													</el-form-item>
+												</el-form>
+											</el-col>
+										</el-row>
+									</el-col>
+									<el-col :span="4">
+										<el-form label-width="80px" @submit.native.prevent>
+											<el-form-item label="车牌号:">
+												<el-input v-model="order.olicense" @keyup.enter.native="doLogin"></el-input>
+											</el-form-item>
+										</el-form>
+									</el-col>
+								</el-row>
+								<el-row>
+									<el-col :span="4">
+										<el-input placeholder="联系电话" v-model="order.ophone">
+											<template slot="prepend">联系电话</template>
+										</el-input>
+									</el-col>
+									<el-col :span="4" :offset="2">
+										<el-input placeholder="车主姓名" v-model="order.oname">
+											<template slot="prepend">车主姓名</template>
+										</el-input>
+									</el-col>
+									<el-col :span="4" :offset="2">
+										<el-input placeholder="车辆品牌" v-model="order.obrand">
+											<template slot="prepend">车辆品牌</template>
+										</el-input>
+									</el-col>
+									<el-col :span="4" :offset="2">
+										<el-input placeholder="车辆型号" v-model="order.omodel">
+											<template slot="prepend">车辆型号</template>
+										</el-input>
+									</el-col>
+								</el-row>
+								<el-row style="margin-top: 20px;">
+									<el-col :span="6">
+										<el-input placeholder="请输入内容" v-model="order.oremark">
+											<template slot="prepend">备注</template>
+										</el-input>
+									</el-col>
+									<el-col :span="6" :offset="1">
+										<el-input placeholder="" v-model="destination">
+											<template slot="prepend">目的地</template>
+										</el-input>
+									</el-col>
+									<el-col :span="4" :offset="1">
+										<el-input placeholder="" v-model="mileage">
+											<template slot="prepend">公里数</template>
+										</el-input>
+									</el-col>
+									<el-col :span="2">
+										<el-button type="primary" round @click="showDialog">添加维修项目</el-button>
+									</el-col>
+									<el-col :span="2">
+										<el-button type="primary" round @click="showDialog2">添加维修商品</el-button>
+									</el-col>
+								</el-row>
+								<el-row>
+									<el-col :span="6">
+										<p style="color: red;font-size: 2em;">接车200起步,一公里5块钱</p>
+									</el-col>
+									<el-col :span="6" :offset="12">
+										<p style="font-size: 2em;">接车费用<span style="color: red;">{{cost}}</span></p>
+									</el-col>
+								</el-row>
+								<el-row style="margin-top: 10px;">
+									<el-col>
+										<el-button @click="isShow3 = true" type="primary" style="margin-left: 16px;">
+											选择接车地点
+										</el-button>
+									</el-col>
+								</el-row>
+								<el-row>
+									<el-col :span="18" style="margin-top: 60px;" :offset="3">
+										<template>
+											<el-table :data="details" style="width: 100%;height: 400px;">
+												<el-table-column label="项目编码" width="120">
+													<template slot-scope="temp">
+														{{temp.$index+1}}
+													</template>
+												</el-table-column>
+												<el-table-column label="项目名称" width="180" prop="detailsname">
+												</el-table-column>
+												<el-table-column label="项目金额" width="180" prop="detailsprice">
+												</el-table-column>
+												<el-table-column label="预计时间" width="180" prop="detailsdate">
+												</el-table-column>
+												<el-table-column label="数量" width="100" prop="detailscount">
+													<template slot-scope="temp">
+														<p v-if="temp.row.detailscount==0">一套</p>
+														<p v-if="temp.row.detailscount>0">{{temp.row.detailscount}}</p>
+													</template>
+												</el-table-column>
+												<el-table-column label="操作" width="180">
+													<template slot-scope="temp">
+														<el-button type="primary" icon="el-icon-delete" circle @click="deldeta(temp.row.detailsid)"></el-button>
+													</template>
+												</el-table-column>
+											</el-table>
+										</template>
+
+									</el-col>
+								</el-row>
+								<el-row>
+									<el-col :span="2">
+										<p>维修人员:<span style="color: red;">{{order.crew}}</span></p>
+									</el-col>
+
+									<el-col :span="2" :offset="8">
+										<p>技工费用:<span style="color: red;">{{this.mecprice}}</span></p>
+									</el-col>
+
+									<el-col :span="4" :offset="8">
+										<p>订单总金额:<span style="color: red;">{{order.sums}}</span></p>
+									</el-col>
+								</el-row>
+								<el-row>
+									<el-col :span="8" :offset="8">
+										<el-button type="primary" @click="add1">生成订单</el-button>
+									</el-col>
+								</el-row>
+								<el-drawer title="选择位置" :visible.sync="isShow3" :with-header="false">
+									<iframe src="百度地图.html" width="510px" height="500px"></iframe>
+									<div class="demo-drawer__footer">
+										<el-button>取 消</el-button>
+										<el-button type="primary" @click="zwwx">确 定</el-button>
+									</div>
+								</el-drawer>
 							</el-tab-pane>
 
 						</el-tabs>
@@ -154,16 +310,21 @@
 			<el-dialog :destroy-on-close="true" @opened="handlOpen2" title="维修项目" :visible.sync="isShow2" :before-close="handleClose2" center>
 				<div id="modalcnt1" style="height: 600px;"></div>
 			</el-dialog>
-			<!--打开地图-->
-			<el-dialog :destroy-on-close="true" @opened="handlOpen3" title="选择地点" :visible.sync="isShow3" :before-close="handleClose3" center>
-				<iframe src="百度地图.html" width="100%" height="500px"></iframe>
-			</el-dialog>
+
 		</div>
 	</body>
 	<script>
 		var appznjc = new Vue({
 			el: "#appznjc",
 			data: {
+				//外派车辆
+				fie: [],
+				//接车费用
+				cost: 200,
+				//公里数
+				mileage: '',
+				//目的地
+				destination: '',
 				//技工费
 				mecprice: 0,
 				totalPrice: 0,
@@ -193,21 +354,69 @@
 				isShow: false,
 				isShow2: false,
 				//打开地图
-				isShow3:false,
+				isShow3: false,
 				activeName: 'first',
 
 			},
 			mounted() {
+				this.wqclquery();
 				this.querys();
 				this.createCode();
 			},
 			methods: {
+				//生成站外维修订单
+				add1() {
+					let _this = this;
+					$.ajax('http://localhost:8080/api/weixiu/zwwx/order', {
+						type: 'post',
+						data: JSON.stringify(_this.order),
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '订单生成成功'
+								});
+								app.showView('wxjc.html'); //调用主页的vm引擎方法,跳页面
+							} else {
+								_this.$message({
+									type: 'warning',
+									message: '出现预期之外的错误'
+								});
+							}
+						}
+					});
+				},
+				//站外接车车辆
+				wqclquery() {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/order/fiequery`, function(person) {
+						_this.fie = person;
+					});
+				},
+				//添加接车费用
+				zwwx() {
+					let _this = this;
+					$.ajax(`http://localhost:8080/api/detailsbiz/add/zwwx/${_this.order.oid}/${_this.cost}`, {
+						type: 'post',
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.isShow3 = false;
+								_this.querydeta();
+								_this.sums();
+							}
+						}
+					});
+				},
 				//打开地图
-				themap(){
+				themap() {
 					this.isShow3 = true;
 				},
 				handlOpen3() {
-					
+
 				},
 				handleClose3(done) {
 					this.$confirm('是否关闭').then(() => {

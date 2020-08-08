@@ -192,6 +192,7 @@
 				},
 					
 				accomplish(){
+						 
 						let oid = sessionStorage.getItem('oid');
 						let _this=this;
 						$.ajax(`http://localhost:8080/api/detailsbiz/updateprice/${oid}/${_this.upsums}/${_this.reworkcost}`, {

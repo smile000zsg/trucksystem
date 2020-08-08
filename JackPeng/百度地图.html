@@ -140,8 +140,8 @@
 		myValue = _value.province + _value.city + _value.district + _value.street + _value.business;
 		G("searchResultPanel").innerHTML = "onconfirm<br />index = " + e.item.index + "<br />myValue = " + myValue;
 		mapvuevm.weixiujygs=myValue;
-		
-		parent.appznjc.weixiujl.weixiujygs=mapvuevm.weixiujygs;
+		//起始位置
+		//parent.appznjc.cost=mapvuevm.weixiujygs;
 		//setPlace();
 		
 	});
@@ -157,7 +157,7 @@
 		//getduration();
 	
 		
-		parent.vmwxzwjc.weixiujl.weixiujydz=myValue2;
+		parent.appznjc.destination=myValue2;
 	});
 
 	function setPlace() {
@@ -237,6 +237,7 @@
 			output += "总路程为：";
 			output += plan.getDistance(true) + "\n"; //获取距离
 			G("output").innerHTML = output;
+			parent.appznjc.mileage=plan.getDistance(true);
 			if(plan.getDistance(true).indexOf('米') > 0) {
 				mapvuevm.weixiulic = plan.getDistance(true).substring(0, plan.getDistance(true).length - 2) * 0.001;
 			} else {
@@ -248,9 +249,9 @@
 			}
 		
 			
-			parent.vmwxzwjc.weixiujl.weixiulic=mapvuevm.weixiulic;
+			parent.appznjc.mileage=mapvuevm.weixiulic;
 			
-			parent.vmwxzwjc.weixiujl.weixiujg=mapvuevm.weixiujg;
+			parent.appznjc.cost=mapvuevm.weixiujg;
 		
 			
 		}

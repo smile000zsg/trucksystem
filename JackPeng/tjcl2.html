@@ -12,26 +12,26 @@
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="车牌号">
-							<el-input></el-input>
+							<el-input v-model="datum.license"></el-input>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="驾驶员">
-							<el-input></el-input>
+							<el-input v-model="datum.pilot"></el-input>
 						</el-form-item>
 					</el-col>
 				</el-row>
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="驾驶员电话">
-							<el-input></el-input>
+							<el-input v-model="datum.dphone"></el-input>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="车辆归属">
-							<el-select placeholder="请选择">
-								<el-option label="公司" value="shanghai"></el-option>
-								<el-option label="个人" value="beijing"></el-option>
+							<el-select v-model="datum.ownership" placeholder="请选择">
+								<el-option label="公司" ></el-option>
+								<el-option label="个人" ></el-option>
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -39,17 +39,18 @@
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="车辆品牌">
-							<el-select placeholder="请选择">
-								<el-option label="兰博基尼" value="shanghai"></el-option>
-								<el-option label="法拉利" value="beijing"></el-option>
+							<el-select v-model="datum.dbrand" placeholder="请选择">
+								<el-option v-for="item in brand" :key="item.bname" :label="item.bname" :value="item.bname">
+									
+								</el-option>		
 							</el-select>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="车型">
-							<el-select placeholder="请选择">
-								<el-option label="GT" value="shanghai"></el-option>
-								<el-option label="258" value="beijing"></el-option>
+							<el-select v-model="datum.dsignal" placeholder="请选择">
+								<el-option label="GT" value="GT"></el-option>
+								<el-option label="258" value="285"></el-option>
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -57,36 +58,36 @@
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="购车生日" >
-							<el-date-picker type="date" placeholder="选择日期" style="width: 100%;"></el-date-picker>
+							<el-date-picker v-model="datum.ddate" type="date" placeholder="选择日期" style="width: 100%;"></el-date-picker>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="汽车颜色">
-							<el-input></el-input>
+							<el-input v-model="datum.dcolor"></el-input>
 						</el-form-item>
 					</el-col>
 				</el-row>
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="当前里程数">
-							<el-input></el-input>
+							<el-input v-model="datum.mileage"></el-input>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="燃料类别">
-							<el-input></el-input>
+							<el-input v-model="datum.fuel"></el-input>
 						</el-form-item>
 					</el-col>
 				</el-row>
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="备注">
-							<el-input></el-input>
+							<el-input v-model="datum.dremark"></el-input>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="客户编号">
-							<el-input v-model="clid"></el-input>
+							<el-input v-model="datum.clid"></el-input>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -106,12 +107,37 @@
 		var vmtjcl2 = new Vue({
 			el: "#vmtjcl2",
 			data: {
-				clid:''
+				//车辆品牌
+				brand:[],
+				datum:{
+					clid:'',
+					license:'',
+					dbrand:'',
+					dsignal:'',
+					pilot:'',
+					dphone:'',
+					ownership:'',
+					ddate:'',
+					dcolor:'',
+					mileage:'',
+					fuel:'',
+					dremark:''
+				}
 			},
 			mounted(){
 					let clid = sessionStorage.getItem('clid');
-					this.clid=clid;
+					this.datum.clid=clid;
 					sessionStorage.removeItem('clid');
+					this.querybrand();
+			},
+			methods:{
+				//查询车辆品牌
+				querybrand(){
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/client/queryBrand`, function(pg) {
+						_this.brand = pg;
+					});
+				}
 			}
 		})
 	</script>
