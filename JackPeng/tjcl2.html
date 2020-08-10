@@ -8,7 +8,7 @@
 
 	<body>
 		<div id="vmtjcl2">
-			<el-form  label-width="100px" >
+			<el-form label-width="100px">
 				<el-row>
 					<el-col :span="12">
 						<el-form-item label="车牌号">
@@ -30,8 +30,8 @@
 					<el-col :span="12">
 						<el-form-item label="车辆归属">
 							<el-select v-model="datum.ownership" placeholder="请选择">
-								<el-option label="公司" ></el-option>
-								<el-option label="个人" ></el-option>
+								<el-option value="公司" label="公司"></el-option>
+								<el-option value="个人" label="个人"></el-option>
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -40,24 +40,24 @@
 					<el-col :span="12">
 						<el-form-item label="车辆品牌">
 							<el-select v-model="datum.dbrand" placeholder="请选择">
-								<el-option v-for="item in brand" :key="item.bname" :label="item.bname" :value="item.bname">
-									
-								</el-option>		
+								<el-option @click.native="queryByid(item.bid)" v-for="item in brand" :key="item.bname" :label="item.bname" :value="item.bname">
+
+								</el-option>
 							</el-select>
 						</el-form-item>
 					</el-col>
 					<el-col :span="12">
 						<el-form-item label="车型">
 							<el-select v-model="datum.dsignal" placeholder="请选择">
-								<el-option label="GT" value="GT"></el-option>
-								<el-option label="258" value="285"></el-option>
+								<el-option v-for="item in motorcycle" :key="item.mname" :label="item.mname" :value="item.mname">
+								</el-option>
 							</el-select>
 						</el-form-item>
 					</el-col>
 				</el-row>
 				<el-row>
 					<el-col :span="12">
-						<el-form-item label="购车生日" >
+						<el-form-item label="购车生日">
 							<el-date-picker v-model="datum.ddate" type="date" placeholder="选择日期" style="width: 100%;"></el-date-picker>
 						</el-form-item>
 					</el-col>
@@ -94,7 +94,7 @@
 				<el-row>
 					<el-col :span="24">
 						<el-form-item>
-							<el-button type="primary">立即创建</el-button>
+							<el-button type="primary" @click="add">新增</el-button>
 							<el-button>重置</el-button>
 						</el-form-item>
 					</el-col>
@@ -108,31 +108,69 @@
 			el: "#vmtjcl2",
 			data: {
 				//车辆品牌
-				brand:[],
-				datum:{
-					clid:'',
-					license:'',
-					dbrand:'',
-					dsignal:'',
-					pilot:'',
-					dphone:'',
-					ownership:'',
-					ddate:'',
-					dcolor:'',
-					mileage:'',
-					fuel:'',
-					dremark:''
+				brand: [],
+				//车型
+				motorcycle: [],
+				datum: {
+					clid: '',
+					license: '',
+					dbrand: '',
+					dsignal: '',
+					pilot: '',
+					dphone: '',
+					ownership: '',
+					ddate: '',
+					dcolor: '',
+					mileage: '',
+					fuel: '',
+					dremark: ''
 				}
 			},
-			mounted(){
-					let clid = sessionStorage.getItem('clid');
-					this.datum.clid=clid;
-					sessionStorage.removeItem('clid');
-					this.querybrand();
+			mounted() {
+				let clid = sessionStorage.getItem('clid');
+				this.datum.clid = clid;
+				sessionStorage.removeItem('clid');
+				this.querybrand();
 			},
-			methods:{
+			methods: {
+				goBack() {
+					appone.isShow2 = false; //非常重要
+					app.showView('khzl.html'); //调用主页的vm引擎方法,跳页面
+				},
+				//新增客户车辆资料
+				add() {
+					let _this=this;
+					$.ajax('http://localhost:8080/api/datum/datum', {
+						type: 'post',
+						data: JSON.stringify(_this.datum),
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "200") {
+								_this.$message({
+									type: 'success',
+									message: '添加成功'
+								});
+									_this.goBack();
+							} else {
+								_this.$message({
+									type: 'warning',
+									message: '操作失败'
+								});
+							}
+						}
+					});
+				},
+				//查询车辆型号
+				queryByid(bid) {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/client/queryBybid/${bid}`, function(pg) {
+						_this.motorcycle = pg;
+					});
+				},
+
 				//查询车辆品牌
-				querybrand(){
+				querybrand() {
 					let _this = this;
 					$.getJSON(`http://localhost:8080/api/client/queryBrand`, function(pg) {
 						_this.brand = pg;

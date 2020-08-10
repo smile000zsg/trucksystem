@@ -140,13 +140,13 @@
 							<el-tab-pane label="站外维修" name="second">
 								<el-row>
 									<el-col :span="4">
-										<p>单号:<span>{{order.oid}}</span></p>
+										<p>单号:<span>{{order1.oid}}</span></p>
 									</el-col>
 									<el-col :span="6">
 										<el-form :inline="true" class="demo-form-inline">
 											<el-form-item label="外派车辆">
 												<template>
-													<el-select v-model="order.ovehicle" placeholder="请选择">
+													<el-select v-model="order1.ovehicle" placeholder="请选择">
 														<el-option v-for="item in fie" :key="item.carbrand" :label="item.carbrand" :value="item.carbrand">
 														</el-option>
 													</el-select>
@@ -160,7 +160,7 @@
 												<el-form label-width="100px">
 													<el-form-item label="维修人员:">
 														<template>
-															<el-select v-model="order.crew" placeholder="请选择">
+															<el-select v-model="order1.crew" placeholder="请选择">
 																<el-option-group v-for="group in teams" :key="group.teamsname" :label="group.teamsname">
 																	<el-option @click.native="queryByPrice(item.mecprice)" v-for="item in group.mechanic" :key="item.mecname" :label="item.mecname" :value="item.mecname">
 																	</el-option>
@@ -175,36 +175,36 @@
 									<el-col :span="4">
 										<el-form label-width="80px" @submit.native.prevent>
 											<el-form-item label="车牌号:">
-												<el-input v-model="order.olicense" @keyup.enter.native="doLogin"></el-input>
+												<el-input v-model="order1.olicense" @keyup.enter.native="doLogin1"></el-input>
 											</el-form-item>
 										</el-form>
 									</el-col>
 								</el-row>
 								<el-row>
 									<el-col :span="4">
-										<el-input placeholder="联系电话" v-model="order.ophone">
+										<el-input placeholder="联系电话" v-model="order1.ophone">
 											<template slot="prepend">联系电话</template>
 										</el-input>
 									</el-col>
 									<el-col :span="4" :offset="2">
-										<el-input placeholder="车主姓名" v-model="order.oname">
+										<el-input placeholder="车主姓名" v-model="order1.oname">
 											<template slot="prepend">车主姓名</template>
 										</el-input>
 									</el-col>
 									<el-col :span="4" :offset="2">
-										<el-input placeholder="车辆品牌" v-model="order.obrand">
+										<el-input placeholder="车辆品牌" v-model="order1.obrand">
 											<template slot="prepend">车辆品牌</template>
 										</el-input>
 									</el-col>
 									<el-col :span="4" :offset="2">
-										<el-input placeholder="车辆型号" v-model="order.omodel">
+										<el-input placeholder="车辆型号" v-model="order1.omodel">
 											<template slot="prepend">车辆型号</template>
 										</el-input>
 									</el-col>
 								</el-row>
 								<el-row style="margin-top: 20px;">
 									<el-col :span="6">
-										<el-input placeholder="请输入内容" v-model="order.oremark">
+										<el-input placeholder="请输入内容" v-model="order1.oremark">
 											<template slot="prepend">备注</template>
 										</el-input>
 									</el-col>
@@ -273,7 +273,7 @@
 								</el-row>
 								<el-row>
 									<el-col :span="2">
-										<p>维修人员:<span style="color: red;">{{order.crew}}</span></p>
+										<p>维修人员:<span style="color: red;">{{order1.crew}}</span></p>
 									</el-col>
 
 									<el-col :span="2" :offset="8">
@@ -281,7 +281,7 @@
 									</el-col>
 
 									<el-col :span="4" :offset="8">
-										<p>订单总金额:<span style="color: red;">{{order.sums}}</span></p>
+										<p>订单总金额:<span style="color: red;">{{order1.sums}}</span></p>
 									</el-col>
 								</el-row>
 								<el-row>
@@ -351,6 +351,27 @@
 					rework: 0,
 					cause: 0
 				},
+				//站外类
+				order1: {
+					oid: '',
+					settlementid: 0,
+					ostate: 1,
+					ovehicle: '',
+					oremark: '',
+					crew: '',
+					odatetime: new Date(),
+					olicense: '',
+					ophone: '',
+					oname: '',
+					obrand: '',
+					omodel: '',
+					sums: 0,
+					odate: '',
+					wstate: 0,
+					finishtime: '',
+					rework: 0,
+					cause: 0
+				},
 				isShow: false,
 				isShow2: false,
 				//打开地图
@@ -364,12 +385,16 @@
 				this.createCode();
 			},
 			methods: {
+				//如果没有车辆资料前往客户中心
+				addkhzl(){
+					app.showView('khzl.html'); //调用主页的vm引擎方法,跳页面
+				},			
 				//生成站外维修订单
 				add1() {
 					let _this = this;
-					$.ajax('http://localhost:8080/api/weixiu/zwwx/order', {
+					$.ajax('http://localhost:8080/api/weixiu/zwwx/order1', {
 						type: 'post',
-						data: JSON.stringify(_this.order),
+						data: JSON.stringify(_this.order1),
 						dataType: 'json',
 						contentType: 'application/json',
 						success(message) {
@@ -440,6 +465,7 @@
 
 					}
 					this.order.sums = this.totalPrice + this.mecprice;
+					this.order1.sums = this.totalPrice + this.mecprice;
 				},
 				//根据商品id删除
 				deldeta(detailsId) {
@@ -475,7 +501,7 @@
 						_this.teams = person;
 					});
 				},
-				//通过车牌查询车主信息
+				//站内通过车牌查询车主信息
 				doLogin() {
 					let _this = this;
 					$.ajax(`http://localhost:8080/api/weixiu/queryByid/${_this.order.olicense}`, {
@@ -488,15 +514,22 @@
 									type: 'warning',
 									message: '此车正在维修中'
 								});
-							} else if(message.code = "200") {
+							} else if(message.code == "200") {
 								_this.order.ophone = message.zhi.dphone;
 								_this.order.oname = message.zhi.pilot;
 								_this.order.obrand = message.zhi.dbrand;
 								_this.order.omodel = message.zhi.dsignal;
+							} else if(message.code == "500") {
+								_this.$notify.error({
+									title: '错误',
+									dangerouslyUseHTMLString: true,
+									message: '此车辆不存在，请前往客户添加<br/> <p class="el-icon-right" ><span style="color:red;">添加车辆资料</span></p>',
+									onClick:_this.addkhzl
+								});
 							}
 						}
 					});
-
+					
 					/*
 					$.getJSON(`http://localhost:8080/api/weixiu/queryByid/${_this.order.olicense}`, function(person) {
 						_this.order.ophone = person.dphone;
@@ -506,6 +539,37 @@
 					});
 					*/
 				},
+				
+				
+					//站外通过车牌查询车主信息
+				doLogin1() {
+					let _this = this;
+					$.ajax(`http://localhost:8080/api/weixiu/queryByid/${_this.order1.olicense}`, {
+						type: 'get',
+						dataType: 'json',
+						contentType: 'application/json',
+						success(message) {
+							if(message.code == "300") {
+								_this.$message({
+									type: 'warning',
+									message: '此车正在维修中'
+								});
+							} else if(message.code == "200") {
+								_this.order1.ophone = message.zhi.dphone;
+								_this.order1.oname = message.zhi.pilot;
+								_this.order1.obrand = message.zhi.dbrand;
+								_this.order1.omodel = message.zhi.dsignal;
+							} else if(message.code == "500") {
+								_this.$notify.error({
+									title: '错误',
+									dangerouslyUseHTMLString: true,
+									message: '此车辆不存在，请前往客户添加<br/> <p class="el-icon-right" ><span style="color:red;">添加车辆资料</span></p>',
+									onClick:_this.addkhzl
+								});
+							}
+						}
+					});
+},
 
 				showDialog() {
 					this.isShow = true;
@@ -577,6 +641,7 @@
 					}
 					//将拼接好的字符串赋值给展示的code
 					this.order.oid = code;
+					this.order1.oid=code;
 				}
 			}
 		})

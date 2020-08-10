@@ -12,27 +12,27 @@
 				<el-col :span="18">
 					<el-form :inline="true" class="demo-form-inline">
 						<el-form-item label="维修单号">
-							<el-input placeholder="支持模糊查"></el-input>
+							<el-input v-model="oid" placeholder="支持模糊查"></el-input>
 						</el-form-item>
 						<el-form-item label="竣工状态">
 							<template>
-								<el-select placeholder="请选择" v-model="id">
-									<el-option label="正在维修" value="1">正在维修
+								<el-select v-model="wstate" placeholder="请选择" >
+									<el-option label="正在维修" value="0" >正在维修
 									</el-option>
-									<el-option label="已竣工" value="2">已竣工
+									<el-option label="返工" value="2">返工
 									</el-option>
 								</el-select>
 							</template>
 						</el-form-item>
 						<el-form-item label="开单时间">
 							<div class="block">
-								<el-date-picker type="date" placeholder="选择日期">
+								<el-date-picker v-model="odatetime" type="date" placeholder="选择日期">
 								</el-date-picker>
 							</div>
 						</el-form-item>
 						<el-form-item>
-							<el-button type="primary" icon="el-icon-search">搜索</el-button>
-							<el-button type="warning" plain>清空</el-button>
+							<el-button type="primary" @click="querys" icon="el-icon-search">搜索</el-button>
+							<el-button type="warning" plain @click="qinkong">清空</el-button>
 						</el-form-item>
 					</el-form>
 				</el-col>
@@ -58,11 +58,15 @@
 							<el-table-column label="操作" width="300">
 								<template slot-scope="temp">
 									<p v-if="temp.row.wstate==0">
-										<el-button type="primary" plain @click="showDialog2(temp.row.oid,temp.row.crew,temp.row.rework)">正在维修</el-button>
+										<el-button type="primary" plain @click="showDialog2(0,temp.row.oid,temp.row.crew,temp.row.rework)">正在维修</el-button>
 										<el-button type="primary" @click="showDialog(temp.row.oid)" plain>详情</el-button>
 									</p>
 									<p v-if="temp.row.wstate==2">
-										<el-button type="danger" plain @click="showDialog2(temp.row.oid,temp.row.crew,temp.row.rework)">返工</el-button>
+										<el-button type="danger" plain @click="showDialog2(2,temp.row.oid,temp.row.crew,temp.row.rework)">返工</el-button>
+										<el-button type="primary" @click="showDialog(temp.row.oid)" plain>详情</el-button>
+									</p>
+									<p v-if="temp.row.wstate==1">
+										<el-button type="success" plain @click="showDialog2(1,temp.row.oid,temp.row.crew,temp.row.rework)">已竣工</el-button>
 										<el-button type="primary" @click="showDialog(temp.row.oid)" plain>详情</el-button>
 									</p>
 								</template>
@@ -94,14 +98,24 @@
 		var appjgjy = new Vue({
 			el: "#appjgjy",
 			data: {
+				oid:'',
+				wstate:0,
+				odatetime:'',
 				//订单详情
 				isShow: false,
 				//点击正在维修
 				isShow2: false,
-				id: 0,
 				pageInfo: {}
 			},
-			methods: {		
+			methods: {	
+				querys(){
+					this.goToPage(1,3)
+				},
+				qinkong(){
+					this.oid='';
+					this.wstate='';
+					this.odatetime='';
+				},
 				showDialog(oid) {
 					this.isShow = true;
 					sessionStorage.setItem('oid', oid);
@@ -116,7 +130,14 @@
 				},
 				
 				//打开竣工返工页面
-				showDialog2(oid, crew, rework) {
+				showDialog2(id,oid, crew, rework) {
+					if(id==1){
+						this.$message({
+									type: 'warning',
+									message: '已竣工完成,不可在进行操作'
+								});
+						return;
+					}
 					this.isShow2 = true;
 					sessionStorage.setItem('oid', oid);
 					sessionStorage.setItem('crew', crew);
@@ -141,7 +162,7 @@
 				},
 				goToPage(p, s) {
 					let _this = this;
-					$.getJSON(`http://localhost:8080/api/order/${p}/${s}`, function(pg) {
+					$.getJSON("http://localhost:8080/api/order/queryBys?p="+p+"&s="+s+"&oid="+_this.oid+"&wstate="+_this.wstate+"&odatetime="+_this.odatetime, function(pg) {
 						_this.pageInfo = pg;
 					});
 				}

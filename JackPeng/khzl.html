@@ -17,11 +17,11 @@
 				<el-col :span="18">
 					<el-form :inline="true" class="demo-form-inline">
 						<el-form-item label="客户姓名">
-							<el-input placeholder="客户姓名"></el-input>
+							<el-input placeholder="客户姓名" v-model="name"></el-input>
 						</el-form-item>
 
 						<el-form-item>
-							<el-button type="primary" icon="el-icon-search">搜索</el-button>
+							<el-button type="primary" icon="el-icon-search" @click="queryByname">搜索</el-button>
 							<el-button type="success" plain @click="showDialog2()">添加车资料</el-button>
 							<el-button type="success" plain @click="showDialog()">添加客户</el-button>
 							<el-button type="warning" plain>编辑</el-button>
@@ -32,7 +32,7 @@
 			<el-row>
 				<el-col :span="24">
 					<template>
-						<el-table highlight-current-row @current-change="handleCurrentChange2" :data="this.pageInfo.list" border style="width: 100%">
+						<el-table @row-click="ShowRowClick" highlight-current-row @current-change="handleCurrentChange2" :data="this.pageInfo.list" border style="width: 100%">
 							<el-table-column label="客户编号" prop="clid" width="200">
 							</el-table-column>
 							<el-table-column label="客户名称" prop="clname" width="200">
@@ -57,7 +57,7 @@
 			</el-row>
 			<el-row>
 				<el-col :span="24">
-					<el-pagination v-if="pageInfo.total!=0" :background="true"  @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.pageNum" :page-size="pageInfo.pageSize" :total="pageInfo.total" :page-sizes="[1,3,6]" layout="total, sizes, prev, pager, next, jumper">
+					<el-pagination v-if="pageInfo.total!=0" :background="true" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageInfo.pageNum" :page-size="pageInfo.pageSize" :total="pageInfo.total" :page-sizes="[1,3,6]" layout="total, sizes, prev, pager, next, jumper">
 					</el-pagination>
 				</el-col>
 			</el-row>
@@ -69,12 +69,21 @@
 			<el-row>
 				<el-col :span="24">
 					<template>
-						<el-table style="width: 100%">
-							<el-table-column label="日期" width="180">
+						<el-table :data="order" style="width: 100%">
+							<el-table-column label="编号" width="120">
+								<template slot-scope="temp">
+									{{temp.$index+1}}
+								</template>
 							</el-table-column>
-							<el-table-column label="姓名" width="180">
+							<el-table-column label="维修人员" width="180" prop="crew">
 							</el-table-column>
-							<el-table-column label="地址">
+							<el-table-column label="车主" prop="oname">
+							</el-table-column>
+							<el-table-column label="维修总金额" width="180" prop="sums">
+							</el-table-column>
+							<el-table-column label="开始维修时间" prop="odatetime">
+							</el-table-column>
+							<el-table-column label="结束时间" prop="finishtime">
 							</el-table-column>
 						</el-table>
 					</template>
@@ -103,25 +112,47 @@
 		var vm = new Vue({
 			el: "#appone",
 			data: {
+				name: '',
 				pageInfo: {},
 				loading: true,
 				isShow: false,
 				isShow2: false,
-				isShow3:false
+				isShow3: false,
+				order: []
 			},
 			mounted() {
-				this.goToPage(1,1);
+				this.goToPage(1, 1);
 			},
 			methods: {
+				queryByname() {
+					if(this.name == '') {
+						this.$message({
+							type: 'warning',
+							message: '请输入要查询的客户名字!'
+						});
+						return;
+					}
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/client/1/3/${_this.name}`, function(pg) {
+						_this.pageInfo = pg;
+					});
+				},
+				//查询车辆维修历史记录
+				ShowRowClick(val) {
+					let _this = this;
+					$.getJSON(`http://localhost:8080/api/client/queryhistory/${val.clid}`, function(pg) {
+						_this.order = pg;
+					});
+				},
 				handleSizeChange(val) {
 					this.goToPage(this.pageInfo.pageNum, val);
 				},
 				handleCurrentChange(val) {
 					this.goToPage(val, this.pageInfo.pageSize);
 				},
-				
-				handleCurrentChange2(val) {	
-					if(val==null){
+
+				handleCurrentChange2(val) {
+					if(val == null) {
 						return;
 					}
 					sessionStorage.setItem('clid', val.clid);
@@ -150,7 +181,7 @@
 										message: '删除成功!'
 									});
 									_this.loading = true;
-									_this.goToPage(1,1);
+									_this.goToPage(1, 1);
 								}
 							}
 						});
@@ -170,16 +201,16 @@
 						done();
 					}).catch(() => {});
 				},
-				handlOpen1() {	
-					$("#modalcnt").load('tjcl2.html');	
+				handlOpen1() {
+					$("#modalcnt").load('tjcl2.html');
 				},
 				handleClose1(done) {
 					this.$confirm('是否关闭').then(() => {
 						done();
 					}).catch(() => {});
 				},
-				handlOpenup() {	
-					$("#modalcnt").load('updatekh.html');	
+				handlOpenup() {
+					$("#modalcnt").load('updatekh.html');
 				},
 				handleCloseup(done) {
 					this.$confirm('是否关闭').then(() => {
