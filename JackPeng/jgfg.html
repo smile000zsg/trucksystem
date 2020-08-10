@@ -245,7 +245,7 @@
 						let oid = sessionStorage.getItem('oid');
 						let _this = this;
 						this.$confirm('是否竣工').then(() => {
-							$.ajax(`http://localhost:8080/api/order/${oid}`, {
+							$.ajax(`http://localhost:8080/api/order/${oid}/${_this.crew}`, {
 								type: 'put',
 								dataType: 'json',
 								contentType: 'application/json',
