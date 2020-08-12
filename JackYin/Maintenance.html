@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<!--<link rel="stylesheet" type="text/css" href="../css/index.css" />-->
+		<style>
+			.demo-table-expand {
+				font-size: 0;
+			}
+			
+			.demo-table-expand label {
+				width: 90px;
+				color: #99a9bf;
+			}
+			
+			.demo-table-expand .el-form-item {
+				margin-right: 0;
+				margin-bottom: 0;
+				width: 50%;
+			}
+			
+			.tree_menu {
+				position: fixed;
+				display: block;
+				z-index: 20000;
+				background-color: #fff;
+				padding: 5px 0;
+				border: 1px solid #ebeef5;
+				border-radius: 4px;
+				box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+			}
+			
+			ul {
+				margin: 0;
+				padding: 0;
+			}
+			
+			ul li {
+				list-style: none;
+				margin: 0;
+				padding: 0 15px;
+				font-size: 14px;
+				line-height: 30px;
+				cursor: pointer;
+			}
+			
+			ul li:hover {
+				background-color: #ebeef5
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="VmSupplier">
+			<el-dialog title="维修项目" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+				<el-form label-position="top" :model="service" label-width="80px" :rules="servicerules" ref="service">
+					<el-form-item label="维修项目" prop="itemsname">
+						<el-input v-model="service.itemsname" autocomplete="off"></el-input>
+					</el-form-item>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="dialogVisible = false">取 消</el-button>
+    				<el-button type="primary" @click="submitForm('service')">确 定</el-button>
+  				</span>
+			</el-dialog>
+			<!--<el-col :span="24">
+				<h1 style="font-size: 25px; margin-top: 2px;">维修项目</h1>
+			</el-col>-->
+			<el-col :span="4">
+				<el-tree :data="treeNodes" :props="defaultProps" @node-contextmenu="rightClick" style="margin-top: 64px;" accordion @node-click="handleNodeClick">
+				</el-tree>
+				<div id="perTreeMenu" v-if="tmDisplay" class="tree_menu" :style="{...rightMenu}">
+					<ul>
+						<li @click="addFSite">新增根节点</li>
+						<li @click="addESite">新增子节点</li>
+						<li @click="deleteSite">删除节点</li>
+						<li @click="updateESite">修改节点</li>
+					</ul>
+				</div>
+			</el-col>
+			<el-col :span="20">
+				<el-form :inline="true" :model="MhcxProject" class="demo-form-inline">
+					<el-form-item>
+						<el-input v-model="MhcxProject.name" autocomplete="off" placeholder="按供应商名称模糊查询"></el-input>
+					</el-form-item>
+					<el-form-item>
+						<el-button icon="el-icon-search" type="info" circle @click="QueryByName"></el-button>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" icon="el-icon-circle-plus-outline" circle @click="AddPoject"></el-button>
+					</el-form-item>
+				</el-form>
+				<template>
+					<el-table :data="tableData" style="width: 100%" height="400">
+						<<el-table-column label="序号" width="100">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column label="项目名称" prop="proname">
+						</el-table-column>
+						<el-table-column label="类别" prop="itemsname">
+						</el-table-column>
+						<el-table-column label="项目名称" prop="proprice">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp">
+								<el-button type="success" icon="el-icon-edit" size="mini" circle @click="UpdateIdProject(temp.row.proid)"></el-button>
+								<el-button type="danger" icon="el-icon-delete" size="mini" circle @click="DeleteIdProject(temp.row.proid)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-col>
+			<el-dialog title="维修项目" :visible.sync="SupplierVisible" width="50%" :before-close="handleCloseSipplier">
+				<el-form :inline="true" :model="Poject" label-width="120px" :rules="Pojectrules" ref="Poject">
+					<el-form-item label="项目编号">
+						<el-input v-model="Poject.proid" autocomplete="off" :disabled="disabled" placeholder="项目编号"></el-input>
+					</el-form-item>
+					<el-form-item label="项目名称" prop="proname">
+						<el-input v-model="Poject.proname" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="维修项目分类">
+						<el-input v-model="Poject.itemsname" autocomplete="off" :disabled="disabled"></el-input>
+					</el-form-item>
+					<el-form-item label="维修项目费用" prop="proprice" :rules="[
+      { required: true, message: '商品单价不能为空'},
+      { type: 'number', message: '商品单价必须为数字值'}
+    ]">
+						<el-input type="goodsprice" v-model.number="Poject.proprice" autocomplete="off"></el-input>
+					</el-form-item>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="SupplierVisible = false">取 消</el-button>
+    				<el-button type="primary" @click="submitFormToMa('Poject')">确 定</el-button>
+  				</span>
+			</el-dialog>
+		</div>
+	</body>
+	<!--<script src="../js/jquery-1.12.4.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/jq_ajax_config.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/vue.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/index.js" type="text/javascript" charset="utf-8"></script>-->
+
+	<script>
+		var VmSupplier = new Vue({
+			data: {
+				dialogVisible: false,
+				treeNodes: [],
+				SupplierVisible: false,
+				tmDisplay: false,
+				statrPoject: '',
+				disabled: true,
+				Poject: {
+					proid: '',
+					proname: '',
+					itemsid: '',
+					itemsname: '',
+					proprice: ''
+				},
+				Pojectrules: {
+					proname: [{
+							required: true,
+							message: '请输入项目名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 10,
+							message: '长度在 1 到 10 个字符',
+							trigger: 'blur'
+						}
+					]
+				},
+				defaultProps: {
+					children: 'list',
+					label: 'itemsname'
+				},
+				MhcxProject: {
+					name: ''
+				},
+				tableData: [],
+				service: {
+					itemsid: '',
+					itemsname: '',
+					fitemsid: ''
+				},
+				servicerules: {
+					itemsname: [{
+							required: true,
+							message: '请输入节点名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 10,
+							message: '长度在 1 到 10 个字符',
+							trigger: 'blur'
+						}
+					]
+				},
+				fyz: ''
+			},
+			mounted() {
+				this.query();
+			},
+			methods: {
+				//初始化
+				query() {
+					let _this = this;
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryItems`, function(data) {
+						_this.treeNodes = data.list;
+					});
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryProject`, function(supplier) {
+						_this.tableData = supplier;
+					});
+				},
+				//新增项目
+				AddPoject() {
+					if(this.Poject.itemsid == '') {
+						this.$message('请选择维修项目类别');
+					} else {
+						this.Poject.proid = '';
+						this.Poject.proname = '';
+						this.Poject.proprice = '';
+						this.SupplierVisible = true;
+						this.statrPoject = 'add';
+					}
+				},
+				//新增或者修改
+				submitFormToMa(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.ProjectToAdd();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				UpdateIdProject(id) {
+					let _this = this;
+					this.statrPoject = 'update';
+					this.SupplierVisible = true;
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryByIdProject/${id}`, function(supplier) {
+						_this.Poject = supplier;
+					});
+				},
+				//新增或者修改具体方法
+				ProjectToAdd() {
+					let _this = this;
+					if(this.statrPoject == 'add') {
+						this.$confirm('确定录入?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/AddByProject',
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.Poject),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '录入完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.SupplierVisible = false;
+										_this.Poject.itemsid = '';
+									} else {
+										_this.$message.error('录入失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					} else {
+						this.$confirm('确定编辑?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/UpdateProject',
+								type: "put",
+								contentType: "application/json",
+								data: JSON.stringify(_this.Poject),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '编辑完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.SupplierVisible = false;
+										_this.Poject.itemsid = '';
+									} else {
+										_this.$message.error('编辑失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					}
+				},
+				//关闭模态框
+				handleClose(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				//右键出菜单
+				rightClick(e, data, node, comp) {
+					this.rightMenu = {
+						top: e.pageY + 'px',
+						left: e.pageX + 'px'
+					}
+					this.tmDisplay = true;
+					const self = this;
+					document.onclick = function(ev) {
+						if(ev.target !== document.getElementById('perTreeMenu')) {
+							self.tmDisplay = false;
+						}
+					}
+					localStorage.setItem("id", data.itemsid);
+					localStorage.setItem("data", data.list);
+				},
+				//点击项目类别出现维修项目
+				handleNodeClick(data) {
+					let _this = this;
+					this.Poject.itemsid = data.itemsid;
+					this.Poject.itemsname = data.itemsname;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryItemsSupplier/${data.itemsid}`, function(supplier) {
+						_this.tableData = supplier;
+					});
+				},
+				//对节点进行操作开始
+				//新增跟节点
+				addFSite() {
+					this.fyz = 'add';
+					this.service.fitemsid = 0;
+					this.service.itemsname = '';
+					this.dialogVisible = true;
+				},
+				//新增子节点
+				addESite() {
+					this.fyz = 'add';
+					this.service.fitemsid = localStorage.getItem("id");
+					this.service.itemsname = '';
+					this.dialogVisible = true;
+				},
+				//删除节点
+				deleteSite() {
+					let data = localStorage.getItem("data");
+					let id = localStorage.getItem("id");
+					let _this = this;
+					this.$confirm('确定删除?').then(() => {
+						if(data == "") {
+							if(this.tableData.length == 0) {
+								$.ajax({
+									url: `http://127.0.0.1:8080/api/lingpeng/DeleteItems/${id}`,
+									type: "delete",
+									dataType: "json",
+									success(magsse) {
+										if(magsse.code == "200") {
+											_this.$message({
+												message: '删除成功',
+												type: 'success'
+											});
+											_this.query();
+											_this.Poject.itemsid = '';
+										} else {
+											_this.$message.error('删除失败');
+										}
+									}
+								});
+							} else {
+								this.$message("此节点下有供应商，无法删除");
+							}
+						} else {
+							this.$message("此节点有子节点,无法删除");
+						}
+					}).catch(() => {
+						this.$message('取消操作');
+					});
+				},
+				//修改节点
+				updateESite() {
+					let id = localStorage.getItem("id");
+					let _this = this;
+					this.fyz = 'update';
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryIdItems/${id}`, function(supplier) {
+						_this.service = supplier;
+					});
+					this.dialogVisible = true;
+				},
+				//对节点进行操作结束
+				//操作
+				handleItemsAddAndUpdate() {
+					let _this = this;
+					if(this.fyz == 'add') {
+						this.$confirm('确定录入此条信息?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/AddItems',
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.service),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '录入完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.dialogVisible = false;
+									} else {
+										_this.$message.error('录入失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消录入');
+						});
+					} else {
+						this.$confirm('确定编辑此条信息?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/UpdateItems',
+								type: "put",
+								contentType: "application/json",
+								data: JSON.stringify(_this.service),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '编辑完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.dialogVisible = false;
+									} else {
+										_this.$message.error('编辑失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消编辑');
+						});
+					}
+				},
+				//新增或修改维修项目分类
+				submitForm(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.handleItemsAddAndUpdate();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				//删除维修项目
+				DeleteIdProject(id) {
+					let _this = this;
+					this.$confirm('确定删除?').then(() => {
+						$.ajax({
+							url: `http://127.0.0.1:8080/api/lingpeng/DeleteProject/${id}`,
+							type: "delete",
+							dataType: "json",
+							success(magsse) {
+								if(magsse.code == "200") {
+									_this.$message({
+										message: '删除成功',
+										type: 'success'
+									});
+									_this.query();
+								} else {
+									_this.$message.error('删除失败');
+								}
+							}
+						});
+					}).catch(() => {
+						this.$message('取消操作');
+					});
+				},
+				//模糊查询
+				QueryByName() {
+					if(this.MhcxProject.name == '') {
+						this.query();
+					} else {
+						let _this = this;
+						$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryByNameProject/${this.MhcxProject.name}`, function(supplier) {
+							_this.tableData = supplier;
+						});
+					}
+				},
+				//点击关闭模态框
+				handleCloseSipplier(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+			}
+		}).$mount("#VmSupplier");
+	</script>
+
+</html>

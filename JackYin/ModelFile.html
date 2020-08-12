@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>车型档案</title>
+		<!--<link rel="stylesheet" href="../css/index.css" />-->
+	</head>
+
+	<body>
+		<div id="Vmcarbrand">
+			<el-dialog title="品牌信息" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+				<el-form label-position="top" :model="addBrand" label-width="80px" :rules="addBrandrules" ref="addBrand">
+					<el-form-item label="品牌序号">
+						<el-input v-model="addBrand.cbdid" autocomplete="off" :disabled="disabled" placeholder="品牌序号"></el-input>
+					</el-form-item>
+					<el-form-item label="品牌名称" prop="cbdname">
+						<el-input v-model="addBrand.cbdname" autocomplete="off" placeholder="品牌名称"></el-input>
+					</el-form-item>
+					<el-form-item label="品牌首字母" prop="logogram">
+						<el-input v-model="addBrand.logogram" autocomplete="off" placeholder="品牌首字母"></el-input>
+					</el-form-item>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="dialogVisible = false">取 消</el-button>
+    				<el-button type="primary" @click="submitForm('addBrand')">确 定</el-button>
+  				</span>
+			</el-dialog>
+			<!--<el-col :span="22">
+				<h1 style="font-size: 25px; margin-top: 2px;">车型档案</h1>
+			</el-col>-->
+			<el-col :span="9" style="margin-right: 100px;">
+				<el-form :inline="true" :model="brand" class="demo-form-inline">
+					<el-form-item>
+						<el-input v-model="brand.name" autocomplete="off" placeholder="按名称和字母查询"></el-input>
+					</el-form-item>
+					<el-form-item>
+						<el-button icon="el-icon-search" type="info" circle @click="selectByBrandName"></el-button>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" icon="el-icon-circle-plus-outline" circle @click="addByBrand"></el-button>
+					</el-form-item>
+				</el-form>
+				<template>
+					<el-table :data="pageinfobrand.list" border>
+						<el-table-column label="序号" width="100">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column prop="cbdname" label="品牌名称" width="125">
+						</el-table-column>
+						<el-table-column prop="logogram" label="首字母" width="80">
+						</el-table-column>
+						<el-table-column label="操作" width="165	">
+							<template slot-scope="temp">
+								<el-button type="success" icon="el-icon-edit" size="mini" circle @click="updateByBrand(temp.row.cbdid)"></el-button>
+								<el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteByBrand(temp.row.cbdid)"></el-button>
+								<el-button type="info" icon="el-icon-s-operation" size="mini" circle @click="selectByBrand(1,4,temp.row.cbdid)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+				<el-pagination v-if="pageinfobrand.total!=0" style="margin-top: 40px;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="pageinfobrand.currentPage" :page-sizes="[4, 6, 8, 10]" :page-size="pageinfobrand.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageinfobrand.total">
+				</el-pagination>
+			</el-col>
+			<el-col :span="12">
+				<el-form :inline="true" :model="brand" class="demo-form-inline">
+					<el-form-item>
+						<el-input v-model="brand.model" autocomplete="off" placeholder="按车辆名称模糊查询"></el-input>
+					</el-form-item>
+					<el-form-item>
+						<el-button icon="el-icon-search" type="info" circle @click="selectByModelName"></el-button>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" icon="el-icon-circle-plus-outline" circle @click="addByModel"></el-button>
+					</el-form-item>
+				</el-form>
+				<template>
+					<el-table :data="pageinfomodel.list" border>
+						<el-table-column label="序号" width="100">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column prop="cmlmodel" label="车辆名称" width="100">
+						</el-table-column>
+						<el-table-column prop="cbdname" label="车辆品牌" width="100">
+						</el-table-column>
+						<el-table-column prop="engname" label="发动机名称" width="126">
+						</el-table-column>
+						<el-table-column label="车辆参考价" width="112">
+							<template slot-scope="temp">
+								{{temp.row.reference}}万
+							</template>	
+						</el-table-column>
+						<el-table-column label="操作" width="110">
+							<template slot-scope="temp">
+								<el-button type="success" icon="el-icon-edit" size="mini" circle @click="updateByModel(temp.row.cmlid)"></el-button>
+								<el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteByModel(temp.row.cmlid)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+					<el-pagination v-if="pageinfomodel.total!=0" style="margin-top: 40px;" @size-change="handleSizeChangeCar" @current-change="handleCurrentChangeCar" :current-page="pageinfomodel.currentPage" :page-sizes="[4, 6, 8, 10]" :page-size="pageinfomodel.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="pageinfomodel.total">
+					</el-pagination>
+				</template>
+			</el-col>
+			<el-dialog title="品牌信息" :visible.sync="dialogVisibleModel" width="40%" :before-close="handleCloseModel">
+				<el-form label-position="top" :model="addmodel" label-width="80px" :rules="addmodelrules" ref="addmodel">
+					<el-form-item label="车辆编号" prop="cmlid">
+						<el-input v-model="addmodel.cmlid" autocomplete="off" :disabled="disabled" placeholder="车辆编号"></el-input>
+					</el-form-item>
+					<el-form-item label="车辆名称" prop="cmlmodel">
+						<el-input v-model="addmodel.cmlmodel" autocomplete="off" placeholder="车辆名称"></el-input>
+					</el-form-item>
+					<el-form-item label="车辆参考价" prop="reference" :rules="[
+      { required: true, message: '商品单价不能为空'},
+      { type: 'number', message: '商品单价必须为数字值'}
+    ]">
+						<el-input type="reference" v-model.number="addmodel.reference" autocomplete="off" placeholder="车辆参考价"></el-input>
+					</el-form-item>
+					<el-col :span="1">
+						&nbsp;
+					</el-col>
+					<el-col :span="7">
+						<el-form-item label="车辆品牌" prop="cbdname">
+							<el-input v-model="addmodel.cbdname" :disabled="disabled" autocomplete="off" placeholder="请选择车辆品牌" @click.native="dealChe()"></el-input>
+						</el-form-item>
+					</el-col>
+					<el-col :span="7">
+						&nbsp;
+					</el-col>
+					<el-col :span="7">
+						<el-form-item label="发动机品牌" prop="engname">
+							<el-input v-model="addmodel.engname" :disabled="disabled" autocomplete="off" placeholder="请选择发动机品牌" @click.native="dealEngine()"></el-input>
+						</el-form-item>
+					</el-col>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="dialogVisibleModel = false">取 消</el-button>
+    				<el-button type="primary" @click="submitFormToMode('addmodel')">确 定</el-button>
+  				</span>
+			</el-dialog>
+			<el-dialog title="车辆品牌信息" :visible.sync="dialogVisibleChe" width="25%" :before-close="handleCloseSupplier">
+				<template>
+					<el-table :data="model" style="width: 300px;" height="250" border>
+						<el-table-column label="品牌名称" prop="cbdname">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp">
+								<el-button type="info" icon="el-icon-edit" circle size="mini" @click="changeChe(temp.row)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-dialog>
+			<el-dialog title="发动机品牌信息" :visible.sync="dialogVisibleEngine" width="25%" :before-close="handleCloseSuppliers">
+				<template>
+					<el-table :data="engine" style="width: 300px;" height="250" border>
+						<el-table-column label="发动机名称" prop="engname">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp">
+								<el-button type="info" icon="el-icon-edit" circle size="mini" @click="change(temp.row)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-dialog>
+		</div>
+	</body>
+	<!--<script src="../js/jquery-1.12.4.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/jq_ajax_config.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/vue.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/index.js" type="text/javascript" charset="utf-8"></script>-->
+	<script>
+		var Vmcarbrand = new Vue({
+			data: {
+				disabled: true,
+				dialogVisible: false,
+				dialogVisibleModel: false,
+				dialogVisibleEngine: false,
+				dialogVisibleChe: false,
+				state: '',
+				brand: {
+					name: '',
+					model: ''
+				},
+				addmodel: {
+					cmlid: '',
+					cmlmodel: '',
+					cbdid: '',
+					cbdname: '',
+					engid: '',
+					engname: '',
+					reference: ''
+				},
+				addmodelrules: {
+					cmlmodel: [{
+							required: true,
+							message: '请输入车辆名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 20,
+							message: '长度在 1 到20 个字符',
+							trigger: 'blur'
+						}
+					],
+					cbdname: [{
+						required: true,
+						message: '请点击来选择一个品牌',
+						trigger: 'blur'
+					}],
+					engname: [{
+						required: true,
+						message: '请点击来选择一个发动机',
+						trigger: 'blur'
+					}]
+				},
+				model: [],
+				engine: [],
+				addBrand: {
+					cbdid: '',
+					cbdname: '',
+					logogram: ''
+				},
+				addBrandrules: {
+					cbdname: [{
+							required: true,
+							message: '请输入品牌名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 20,
+							message: '长度在 1 到20 个字符',
+							trigger: 'blur'
+						}
+					],
+					logogram: [{
+							required: true,
+							message: '请输入品牌首字母',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 1,
+							message: '长度为一个字符',
+							trigger: 'blur'
+						}
+					]
+				},
+				pageinfobrand: [],
+				pageinfomodel: [],
+				deletesmodel: []
+			},
+			mounted() {
+				this.selectCarBrand(1, 4, '404');
+				this.selectCarModel(1, 4, '404');
+			},
+			methods: {
+				//选择品牌
+				changeChe(row) {
+					this.addmodel.cbdid = row.cbdid;
+					this.addmodel.cbdname = row.cbdname;
+					this.dialogVisibleChe = false;
+				},
+				//选择发动机
+				change(row) {
+					this.addmodel.engid = row.engid;
+					this.addmodel.engname = row.engname;
+					this.dialogVisibleEngine = false;
+				},
+				//打开发动机模态框
+				dealChe() {
+					this.dialogVisibleChe = true;
+					let _this = this;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryAllCarBrand`, function(data) {
+						_this.model = data;
+					});
+				},
+				//打开车辆模态框
+				dealEngine() {
+					this.dialogVisibleEngine = true;
+					let _this = this;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryEngine`, function(data) {
+						_this.engine = data;
+					});
+				},
+				//关闭模态框
+				handleCloseSupplier(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				//关闭模态框
+				handleCloseSuppliers(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				//品牌分页查询
+				selectCarBrand(pageNum, pageSize, name) {
+					let _this = this; //非常重要
+					if(name == '') {
+						name = '404';
+					}
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryCarBrand/${pageNum}/${pageSize}/${name}`, function(data) {
+						_this.pageinfobrand = data;
+					});
+				},
+				//品牌中选择页数查询开始
+				handleSizeChange(val) {
+					this.selectCarBrand(this.pageinfobrand.pageNum, val, this.brand.name);
+				},
+				handleCurrentChange(val) {
+					this.selectCarBrand(val, this.pageinfobrand.pageSize, this.brand.name);
+				},
+				//品牌中选择页数查询结束
+				//模糊查询品牌开始
+				selectByBrandName() {
+					if(this.brand.name == '') {
+						this.selectCarBrand(1, 4, '404');
+					} else {
+						this.selectCarBrand(1, this.pageinfobrand.pageSize, this.brand.name);
+					}
+				},
+				//模糊查询品牌结束
+				//新增
+				addByBrand() {
+					this.dialogVisible = true;
+					this.state = 'add';
+					this.addBrand.cbdname = "";
+					this.addBrand.cbdid = "";
+					this.addBrand.logogram = "";
+				},
+				addByBrandTo() {
+					let _this = this;
+					if(this.state == 'add') {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/AddCarBrand',
+							type: "post",
+							contentType: "application/json",
+							data: JSON.stringify(_this.addBrand),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '新增成功',
+										type: 'success'
+									});
+									_this.selectCarBrand(1, 4, '404');
+								} else {
+									_this.$message.error('新增失败,请勿重复新增!');
+								}
+							}
+						});
+					} else {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/UpdateCarBrand',
+							type: "put",
+							contentType: "application/json",
+							data: JSON.stringify(_this.addBrand),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '修改完成',
+										type: 'success'
+									});
+									_this.selectCarBrand(1, 4, '404');
+									_this.selectCarModel(1, 4, '404');
+								} else {
+									_this.$message.error('修改失败,请勿重复修改!');
+								}
+							}
+						});
+
+					}
+				},
+				//新增结束
+				//修改
+				updateByBrand(cbdid) {
+					let _this = this; //非常重要
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryIdCarBrand/${cbdid}`, function(carbrand) {
+						_this.addBrand = carbrand;
+						_this.dialogVisible = true;
+					});
+					this.state = "update";
+				},
+				//修改结束
+				//删除
+				deleteByBrand(id) {
+					let _this = this;
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryCarModelById/1/50/${id}`, function(data) {
+						_this.deletesmodel = data;
+					});
+					if(this.deletesmodel.total == 0) {
+						this.$confirm('是否删除此车辆品牌？', '确认信息', {
+								distinguishCancelAndClose: true,
+								confirmButtonText: '是',
+								cancelButtonText: '否'
+							})
+							.then(() => {
+								$.ajax(`http://127.0.0.1:8080/api/lingpeng/DeleteCarBrand/${id}`, {
+									type: "delete",
+									dataType: "json",
+									success(magsse) {
+										if(magsse.code == "200") {
+											_this.$message({
+												message: '删除成功',
+												type: 'success'
+											});
+											_this.selectCarBrand(1, 4, '404');
+										} else {
+											_this.$message.error('删除失败');
+										}
+									}
+								});
+							})
+							.catch(action => {
+								this.$message('取消删除');
+							});
+					} else {
+						_this.$message.error('不能删除,此车辆品牌下有汽车型号');
+					}
+
+				},
+				//删除结束
+				//查询车型
+				selectByBrand(pageNum, pageSize, id) {
+					let _this = this; //非常重
+					if(name == '') {
+						name = '404';
+					}
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryCarModelById/${pageNum}/${pageSize}/${id}`, function(data) {
+						//						loading.close();
+						_this.pageinfomodel = data;
+					});
+				}
+				//品牌模态框里面的事件开始
+				,
+				handleClose(done) {
+					if(this.state == 'add') {
+						this.$confirm('关闭当前页面？', '确定', {
+							distinguishCancelAndClose: true,
+							confirmButtonText: '确定',
+							cancelButtonText: '取消'
+						}).then(() => {
+							done();
+						}).catch(() => {
+
+						});
+					} else {
+						this.$confirm('确定要关闭吗？', '确定', {
+							distinguishCancelAndClose: true,
+							confirmButtonText: '确定',
+							cancelButtonText: '取消'
+						}).then(() => {
+							done();
+						}).catch(() => {
+
+						});
+					}
+				},
+				submitForm(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.dialogVisible = false;
+							this.addByBrandTo();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				//品牌模态框里面的事件结束
+				//车型分页查询
+				selectCarModel(pageNum, pageSize, name) {
+					let _this = this; //非常重要
+					if(name == '') {
+						name = '404';
+					}
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryCarModel/${pageNum}/${pageSize}/${name}`, function(data) {;
+						_this.pageinfomodel = data;
+					});
+				},
+				//车型中选择页数查询开始
+				handleSizeChangeCar(val) {
+					this.selectCarModel(this.pageinfobrand.pageNum, val, this.brand.model);
+				},
+				handleCurrentChangeCar(val) {
+					this.selectCarModel(val, this.pageinfobrand.pageSize, this.brand.model);
+				}, //模糊查询品牌开始
+				selectByModelName() {
+					if(this.brand.model == '') {
+						this.selectCarModel(1, 4, '404');
+					} else {
+						this.selectCarModel(1, this.pageinfobrand.pageSize, this.brand.model);
+					}
+				},
+				//模糊查询品牌结束
+				//新增
+				addByModel() {
+					this.dialogVisibleModel = true;
+					this.state = 'add';
+					this.addmodel.cmlid = '';
+					this.addmodel.cmlmodel = '';
+					this.addmodel.cbdname = '';
+					this.addmodel.cbdid = '';
+					this.addmodel.engid = '';
+					this.addmodel.engname = '';
+					this.addmodel.reference = '';
+				},
+				//修改
+				updateByModel(id) {
+					let _this = this; //非常重要
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryIdCarModel/${id}`, function(carbrand) {
+						_this.addmodel = carbrand;
+						_this.dialogVisibleModel = true;
+					});
+					this.state = "update";
+				},
+				//模态框里面的事件开始
+				handleCloseModel(done) {
+					this.$confirm('是否离开页面？', '确定', {
+						distinguishCancelAndClose: true,
+						confirmButtonText: '确定',
+						cancelButtonText: '取消'
+					}).then(() => {
+						done();
+					}).catch(() => {
+
+					});
+				},
+				submitFormToMode(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.dialogVisibleModel = false;
+							this.addByModelTo();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				addByModelTo() {
+					let _this = this;
+					if(this.state == 'add') {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/AddCarModel',
+							type: "post",
+							contentType: "application/json",
+							data: JSON.stringify(_this.addmodel),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '新增成功',
+										type: 'success'
+									});
+									_this.selectCarModel(1, 4, '404');
+								} else {
+									_this.$message.error('新增失败,请勿重复新增!');
+								}
+							}
+						});
+					} else {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/UpdateCarModel',
+							type: "put",
+							contentType: "application/json",
+							data: JSON.stringify(_this.addmodel),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '修改完成',
+										type: 'success'
+									});
+									_this.selectCarModel(1, 4, '404');
+								} else {
+									_this.$message.error('修改失败,请勿重复修改!');
+								}
+							}
+						});
+
+					}
+				},
+				//模态框里面的事件结束
+				//删除
+				deleteByModel(id) {
+					let _this = this;
+					this.$confirm('是否删除此汽车型号？', '确认信息', {
+							distinguishCancelAndClose: true,
+							confirmButtonText: '是',
+							cancelButtonText: '否'
+						})
+						.then(() => {
+							$.ajax(`http://127.0.0.1:8080/api/lingpeng/DeleteCarModel/${id}`, {
+								type: "delete",
+								dataType: "json",
+								success(magsse) {
+									if(magsse.code == "200") {
+										_this.$message({
+											message: '删除成功',
+											type: 'success'
+										});
+										_this.selectCarModel(1, 4, '404');
+									} else {
+										_this.$message.error('删除失败');
+									}
+								}
+							});
+						})
+						.catch(action => {
+							this.$message('取消删除');
+						});
+				}
+			},
+			filters: {
+				filterMoney(val) {
+					var a = val + "";
+					return a.substring(0, a.length - 4) + '万';
+				}
+			}
+		}).$mount("#Vmcarbrand")
+	</script>
+
+</html>

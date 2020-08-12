@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<!--<link rel="stylesheet" href="../css/index.css" />-->
+	</head>
+
+	<body>
+		<div id="VMGoods">
+			<!--<el-col :span="20" style="margin-left: 120px;">
+				<el-col :span="4">
+				<h1 style="font-size: 25px; margin-top: 2px;">商品资料</h1>
+			</el-col>-->
+			<el-form :inline="true" :model="good" class="demo-form-inline" style="text-align: center;">
+				<el-form-item>
+					<el-input v-model="good.name" autocomplete="off" placeholder="按名称和字母查询"></el-input>
+				</el-form-item>
+				<el-form-item>
+					<el-button icon="el-icon-search" type="info" circle @click="SelectId"></el-button>
+				</el-form-item>
+				<el-form-item>
+					<el-button type="primary" icon="el-icon-circle-plus-outline" circle @click="InsertOne"></el-button>
+				</el-form-item>
+			</el-form>
+			<template>
+				<el-tabs v-model="activeName" @tab-click="handleClick(activeName)">
+					<el-tab-pane label="可用" name="first">
+						<template>
+							<el-table :data="Goods.list" style="width: 100%" border :default-sort="{prop: 'date', order: 'descending'}">
+								<<el-table-column label="序号" width="100">
+									<template slot-scope="temp">
+										{{temp.$index+1}}
+									</template>
+								</el-table-column>
+								<el-table-column prop="goodsname" label="商品名称">
+								</el-table-column>
+								<el-table-column prop="supbrand" label="商品品牌">
+								</el-table-column>
+								<el-table-column prop="inventory" label="商品库存" sortable>
+								</el-table-column>
+								<el-table-column prop="supaddress" label="厂商地址">
+								</el-table-column>
+								<el-table-column prop="supname" label="厂商名称">
+								</el-table-column>
+								<el-table-column prop="goodsprice" label="商品价格" sortable>
+								</el-table-column>
+								<el-table-column label="操作">
+									<template slot-scope="temp">
+										<el-button type="success" icon="el-icon-edit" circle size="mini" @click="UpdateOne(temp.row.goodsid)"></el-button>
+									</template>
+								</el-table-column>
+							</el-table>
+							<el-pagination v-if="Goods.total!=0" style="margin-top: 40px;" @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="Goods.currentPage" :page-sizes="[4, 6, 8, 10]" :page-size="Goods.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="Goods.total">
+							</el-pagination>
+						</template>
+					</el-tab-pane>
+					<el-tab-pane label="停用" name="second">
+						<template>
+							<el-table :data="Goods.list" style="width: 100%" border :default-sort="{prop: 'date', order: 'descending'}">
+								<el-table-column label="商品编码">
+									<template slot-scope="temp">
+										{{temp.row.goodsid}}
+									</template>
+								</el-table-column>
+								<el-table-column prop="goodsname" label="商品名称">
+								</el-table-column>
+								<el-table-column prop="supbrand" label="商品品牌">
+								</el-table-column>
+								<el-table-column prop="inventory" label="商品库存" sortable>
+								</el-table-column>
+								<el-table-column prop="supaddress" label="厂商地址">
+								</el-table-column>
+								<el-table-column prop="supname" label="厂商名称">
+								</el-table-column>
+								<el-table-column prop="goodsprice" label="商品价格" sortable>
+								</el-table-column>
+								<el-table-column label="操作">
+									<template slot-scope="temp">
+										<el-button type="success" icon="el-icon-edit" circle size="mini" @click="UpdateOne(temp.row.goodsid)"></el-button>
+									</template>
+								</el-table-column>
+							</el-table>
+							<el-pagination v-if="Goods.total!=0" style="margin-top: 40px;" @size-change="handleTingSizeChange" @current-change="handleTingCurrentChange" :current-page="Goods.currentPage" :page-sizes="[4, 6, 8, 10]" :page-size="Goods.pageSize" layout="total, sizes, prev, pager, next, jumper" :total="Goods.total">
+							</el-pagination>
+						</template>
+					</el-tab-pane>
+				</el-tabs>
+			</template>
+			</el-col>
+			<el-dialog title="商品信息" :visible.sync="dialogVisible" width="50%" :before-close="handleCloseSipplier">
+				<el-form :inline="true" :model="goods" label-width="120px" :rules="goodsrules" ref="goods">
+					<el-col v-if="state == 'update'" :span="14" style="margin-left: 200px;">
+						<el-form-item label="商品状态：" prop="psex">
+							<el-radio-group v-model="goods.state">
+								<el-radio :label="1">
+									停用
+								</el-radio>
+								<el-radio :label="2">
+									通过
+								</el-radio>
+							</el-radio-group>
+						</el-form-item>
+					</el-col>
+					<el-form-item label="商品编号">
+						<el-input v-model="goods.goodsid" :disabled="disabled" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="商品名称" prop="goodsname">
+						<el-input v-model="goods.goodsname"></el-input>
+					</el-form-item>
+					<el-form-item label="库存" prop="inventory" :rules="[
+      { required: true, message: '库存不能为空'},
+      { type: 'number', message: '库存必须为数字值'}
+    ]">
+						<el-input type="inventory" v-model.number="goods.inventory" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="商品类别" prop="goodstype">
+						<el-select v-model="goods.goodstype">
+							<el-option v-for="(temp,index) in type" :label="temp.name" :value="temp.name"></el-option>
+						</el-select>
+					</el-form-item>
+					<el-form-item label="品牌" prop="supbrand">
+						<el-input v-model="goods.supbrand" :disabled="disabled" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="地址" prop="supaddress">
+						<el-input v-model="goods.supaddress" :disabled="disabled" autocomplete="off"></el-input>
+					</el-form-item>
+					<el-form-item label="供应商" prop="supname">
+						<el-input v-model="goods.supname" :disabled="disabled" autocomplete="off" placeholder="点击选择供应商" @click.native="dealThing()"></el-input>
+					</el-form-item>
+					<el-form-item label="商品单价" prop="goodsprice" :rules="[
+      { required: true, message: '商品单价不能为空'},
+      { type: 'number', message: '商品单价必须为数字值'}
+    ]">
+						<el-input type="goodsprice" v-model.number="goods.goodsprice" autocomplete="off"></el-input>
+					</el-form-item>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="dialogVisible = false">取 消</el-button>
+    				<el-button type="primary" @click="submitForm('goods')">确 定</el-button>
+  				</span>
+			</el-dialog>
+			<el-dialog title="供应商信息" :visible.sync="dialogVisibleSupplier" width="25%" :before-close="handleCloseSupplier">
+				<template>
+					<el-table :data="supplier" style="width: 300px;" height="250" border>
+						<el-table-column label="供应商名称" prop="supname">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp">
+								<el-button type="info" icon="el-icon-edit" circle size="mini" @click="change(temp.row)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-dialog>
+		</div>
+	</body>
+	<!--<script src="../js/jquery-1.12.4.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/jq_ajax_config.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/vue.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/index.js" type="text/javascript" charset="utf-8"></script>-->
+	<script>
+		var VMGoods = new Vue({
+			data: {
+				Goods: [],
+				dialogVisibleSupplier: false,
+				supplier: [],
+				activeName: 'first',
+				dialogVisible: false,
+				disabled: true,
+				state: '',
+				good: {
+					name: ''
+				},
+				type: [{
+					name: '油漆'
+				}, {
+					name: '玻璃'
+				}, {
+					name: '轮胎'
+				}, {
+					name: '机油'
+				}, {
+					name: '其他硬件'
+				}],
+				goods: {
+					goodsid: '',
+					goodsname: '',
+					goodstype: '',
+					inventory: '',
+					supid: '',
+					supname: '',
+					supbrand: '',
+					supaddress: '',
+					goodsprice: '',
+					state: ''
+				},
+				goodsrules: {
+					goodsname: [{
+							required: true,
+							message: '请输入商品名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 10,
+							message: '长度在 1 到 10 个字符',
+							trigger: 'blur'
+						}
+					],
+					goodstype: [{
+						required: true,
+						message: '请至少选择一个商品类型',
+						trigger: 'change'
+					}],
+					supname: [{
+						required: true,
+						message: '请点击来选择一个供应商',
+						trigger: 'blur'
+					}]
+				}
+			},
+			mounted() {
+				this.SelectAll(1, 4, '404', 2);
+			},
+			filters: {
+				state(val) {
+					return val == 1 ? '停用' : '通过';
+				}
+			},
+			methods: {
+				submitForm(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.handle();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				handle() {
+					let _this = this;
+					if(this.state == 'add') {
+						this.goods.state = '2';
+						this.$confirm('确定新增?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/AddGoods',
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.goods),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '录入完成',
+											type: 'success'
+										});
+										_this.SelectAll(1, 4, '404', 2);
+										_this.dialogVisible = false;
+									} else {
+										_this.$message.error('录入失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					} else {
+						this.$confirm('确定编辑?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/UpdateGoods',
+								type: "put",
+								contentType: "application/json",
+								data: JSON.stringify(_this.goods),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '编辑完成',
+											type: 'success'
+										});
+										_this.SelectAll(1, 4, '404', 2);
+										_this.dialogVisible = false;
+									} else {
+										_this.$message.error('编辑失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					}
+				},
+				change(row) {
+					this.goods.supid = row.supid;
+					this.goods.supname = row.supname;
+					this.goods.supbrand = row.supbrand;
+					this.goods.supaddress = row.supaddress;
+					this.dialogVisibleSupplier = false;
+
+				},
+				dealThing() {
+					let _this = this;
+					this.dialogVisibleSupplier = true;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QuerySupplier`, function(supplier) {
+						_this.supplier = supplier;
+					});
+
+				},
+				handleCloseSupplier(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				handleCloseSipplier(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				handleClick(name) {
+					if('second' == name) {
+						this.SelectTingAll(1, 4, '404', 1);
+					} else {
+						this.SelectAll(1, 4, '404', 2);
+					}
+				},
+				SelectAll(pageNum, pageSize, name, state) {
+					let _this = this; //非常重要
+					if(name == '') {
+						name = '404';
+					}
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryGoods/${pageNum}/${pageSize}/${name}/${state}`, function(good) {
+						_this.Goods = good;
+					});
+				},
+				SelectTingAll(pageNum, pageSize, name, state) {
+					let _this = this; //非常重要
+					if(name == '') {
+						name = '404';
+					}
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryGoods/${pageNum}/${pageSize}/${name}/${state}`, function(good) {
+						_this.Goods = good;
+					});
+				},
+				handleSizeChange(val) {
+					this.SelectAll(this.Goods.pageNum, val, this.good.name, 2);
+				},
+				handleCurrentChange(val) {
+					this.SelectAll(val, this.Goods.pageSize, this.good.name, 2);
+				},
+				handleTingSizeChange(val) {
+					this.SelectAll(this.Goods.pageNum, val, this.good.name, 1);
+				},
+				handleTingCurrentChange(val) {
+					this.SelectAll(val, this.Goods.pageSize, this.good.name, 1);
+				},
+				SelectId() {
+					if(name == '') {
+						name = '404';
+					}
+					if('second' == this.activeName) {
+						this.SelectTingAll(1, this.Goods.pageSize, this.good.name, 1);
+					} else {
+						this.SelectAll(1, this.Goods.pageSize, this.good.name, 2);
+					}
+
+				},
+				InsertOne() {
+					this.goods.goodsid = '';
+					this.goods.goodsname = '';
+					this.goods.goodstype = '';
+					this.goods.inventory = '';
+					this.goods.supid = '';
+					this.goods.supname = '';
+					this.goods.supbrand = '';
+					this.goods.supaddress = '';
+					this.goods.goodsprice = '';
+					this.goods.state = '';
+					this.dialogVisible = true;
+					this.state = 'add';
+				},
+				UpdateOne(id) {
+					this.dialogVisible = true;
+					this.state = 'update';
+					let _this = this;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryIdGoods/${id}`, function(good) {
+						_this.goods = good;
+					});
+				}
+			}
+		}).$mount("#VMGoods");
+	</script>
+
+</html>

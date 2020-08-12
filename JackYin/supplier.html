@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<!--<link rel="stylesheet" type="text/css" href="../css/index.css" />-->
+		<style>
+			.demo-table-expand {
+				font-size: 0;
+			}
+			
+			.demo-table-expand label {
+				width: 90px;
+				color: #99a9bf;
+			}
+			
+			.demo-table-expand .el-form-item {
+				margin-right: 0;
+				margin-bottom: 0;
+				width: 50%;
+			}
+			
+			.tree_menu {
+				position: fixed;
+				display: block;
+				z-index: 20000;
+				background-color: #fff;
+				padding: 5px 0;
+				border: 1px solid #ebeef5;
+				border-radius: 4px;
+				box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+			}
+			
+			ul {
+				margin: 0;
+				padding: 0;
+			}
+			
+			ul li {
+				list-style: none;
+				margin: 0;
+				padding: 0 15px;
+				font-size: 14px;
+				line-height: 30px;
+				cursor: pointer;
+			}
+			
+			ul li:hover {
+				background-color: #ebeef5
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="VmSupplier">
+			<el-dialog title="新增地址" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
+				<el-form label-position="top" :model="addSite" label-width="80px" :rules="servicerules" ref="addSite">
+					<el-form-item label="地址" prop="sitename">
+						<el-input v-model="addSite.sitename" autocomplete="off" placeholder="地址"></el-input>
+					</el-form-item>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="dialogVisible = false">取 消</el-button>
+    				<el-button type="primary" @click="submitForm('addSite')">确 定</el-button>
+  				</span>
+			</el-dialog>
+			<!--<el-col :span="24">
+				<h1 style="font-size: 25px; margin-top: 2px;">供货单位</h1>
+			</el-col>-->
+			<el-col :span="4">
+				<el-tree :data="treeNodes" :props="defaultProps" @node-contextmenu="rightClick" style="margin-top: 64px;" accordion @node-click="handleNodeClick">
+				</el-tree>
+				<div id="perTreeMenu" v-if="tmDisplay" class="tree_menu" :style="{...rightMenu}">
+					<ul>
+						<li @click="addFSite">新增根节点</li>
+						<li @click="addESite">新增子节点</li>
+						<li @click="deleteSite">删除节点</li>
+						<li @click="updateESite">修改节点</li>
+					</ul>
+				</div>
+			</el-col>
+			<el-col :span="20">
+				<el-form :inline="true" :model="Mhcxsupplier" class="demo-form-inline">
+					<el-form-item>
+						<el-input v-model="Mhcxsupplier.name" autocomplete="off" placeholder="按供应商名称模糊查询"></el-input>
+					</el-form-item>
+					<el-form-item>
+						<el-button icon="el-icon-search" type="info" circle @click="selectBySupplier"></el-button>
+					</el-form-item>
+					<el-form-item>
+						<el-button type="primary" icon="el-icon-circle-plus-outline" circle @click="addBySupplier"></el-button>
+					</el-form-item>
+				</el-form>
+				<template>
+					<el-table :data="tableData" style="width: 100%">
+						<el-table-column type="expand">
+							<template slot-scope="item">
+								<el-form label-position="left" inline class="demo-table-expand">
+									<el-form-item label="编号">
+										<span>{{ item.row.supid }}</span>
+									</el-form-item>
+									<el-form-item label="名称">
+										<span>{{ item.row.supname }}</span>
+									</el-form-item>
+									<el-form-item label="品牌">
+										<span>{{ item.row.supbrand }}</span>
+									</el-form-item>
+									<el-form-item label="地址">
+										<span>{{ item.row.supaddress }}</span>
+									</el-form-item>
+									<el-form-item label="联系电话">
+										<span>{{ item.row.supphone }}</span>
+									</el-form-item>
+									<el-form-item label="邮箱">
+										<span>{{ item.row.supemail }}</span>
+									</el-form-item>
+								</el-form>
+							</template>
+						</el-table-column>
+						<el-table-column label="供应商编号" prop="supid">
+						</el-table-column>
+						<el-table-column label="供应商名称" prop="supname">
+						</el-table-column>
+						<el-table-column label="供应商品牌" prop="supbrand">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp">
+								<el-button type="success" icon="el-icon-edit" size="mini" circle @click="updateBySupplier(temp.row.supid)"></el-button>
+								<el-button type="danger" icon="el-icon-delete" size="mini" circle @click="deleteBySupplier(temp.row.supid)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-col>
+			<el-dialog title="供应商信息" :visible.sync="SupplierVisible" width="50%" :before-close="handleCloseSipplier">
+				<el-form :inline="true" :model="addSupplier" label-width="120px" :rules="Pojectrules" ref="addSupplier">
+					<el-form-item label="供应商序号" prop="supid">
+						<el-input v-model="addSupplier.supid" autocomplete="off" :disabled="disabled" placeholder="供应商序号"></el-input>
+					</el-form-item>
+					<el-form-item label="供应商名称" prop="supname">
+						<el-input v-model="addSupplier.supname" autocomplete="off" placeholder="供应商名称"></el-input>
+					</el-form-item>
+					<el-form-item label="供应商品牌" prop="supbrand">
+						<el-input v-model="addSupplier.supbrand" autocomplete="off" placeholder="供应商名称"></el-input>
+					</el-form-item>
+					<el-form-item v-if="statrSupplier == 'add'" label="供应商地址" prop="supaddress">
+						<el-input v-model="addSupplier.supaddress" autocomplete="off" :disabled="disabled" placeholder="供应商地址"></el-input>
+					</el-form-item>
+					<el-form-item v-if="statrSupplier == 'update'" label="供应商地址" prop="supaddress">
+						<el-input v-model="addSupplier.supaddress" :disabled="disabled" autocomplete="off" placeholder="点击选择供应商地址" @click.native="dealThing()"></el-input>
+					</el-form-item>
+					<el-form-item label="联系电话" prop="supphone">
+						<el-input v-model="addSupplier.supphone" autocomplete="off" placeholder="供应商联系电话"></el-input>
+					</el-form-item>
+					<el-form-item label="供应商邮箱" prop="supemail">
+						<el-input v-model="addSupplier.supemail" autocomplete="off" placeholder="供应商邮箱"></el-input>
+					</el-form-item>
+				</el-form>
+				<span slot="footer" class="dialog-footer">
+    				<el-button @click="SupplierVisible = false">取 消</el-button>
+    				<el-button type="primary" @click="submitFormToMa('addSupplier')">确 定</el-button>
+  				</span>
+			</el-dialog>
+			<el-dialog title="供应商信息" :visible.sync="dialogVisibleSupplier" width="25%" :before-close="handleCloseSupplier">
+				<template>
+					<el-table :data="site" style="width: 300px;" height="250" border>
+						<el-table-column label="地址名称" prop="sitename">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp">
+								<el-button type="info" icon="el-icon-edit" circle size="mini" @click="change(temp.row)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-dialog>
+		</div>
+	</body>
+	<!--<script src="../js/jquery-1.12.4.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/jq_ajax_config.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/vue.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/index.js" type="text/javascript" charset="utf-8"></script>-->
+
+	<script>
+		var VmSupplier = new Vue({
+			data: {
+				SiteId: '',
+				SiteName: '',
+				tmDisplay: false,
+				disabled: true,
+				dialogVisibleSupplier: false,
+				statrSupplier: '',
+				fyz: '',
+				dialogVisible: false,
+				SupplierVisible: false,
+				treeNodes: [],
+				tableData: [],
+				site: [],
+				Mhcxsupplier: {
+					name: ''
+				},
+				addSite: {
+					siteid: '',
+					sitename: '',
+					fsiteid: ''
+				},
+				servicerules: {
+					sitename: [{
+							required: true,
+							message: '请输入节点名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 10,
+							message: '长度在 1 到 10 个字符',
+							trigger: 'blur'
+						}
+					]
+				},
+				defaultProps: {
+					children: 'children',
+					label: 'sitename'
+				},
+				addSupplier: {
+					supid: '',
+					supname: '',
+					supbrand: '',
+					siteid: '',
+					supaddress: '',
+					supphone: '',
+					supemail: ''
+				},
+				Pojectrules: {
+					supname: [{
+							required: true,
+							message: '请输入供应商名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 10,
+							message: '长度在 1 到 10 个字符',
+							trigger: 'blur'
+						}
+					],
+					supbrand: [{
+							required: true,
+							message: '请输入供应商品牌名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 10,
+							message: '长度在 1 到 10 个字符',
+							trigger: 'blur'
+						}
+					],
+					supaddress: [{
+						required: true,
+						message: '请点击来选择地址',
+						trigger: 'blur'
+					}],
+					supphone: [{
+						required: true,
+						validator: (rule, value, callback) => {
+							const phoneReg = /^1[3|4|5|7|8][0-9]{9}$/
+							if(!value) {
+								return callback(new Error('电话号码不能为空'))
+							}
+							if(!Number.isInteger(+value)) {
+								callback(new Error('请输入数字值'))
+							} else {
+								if(phoneReg.test(value)) {
+									callback()
+								} else {
+									callback(new Error('电话号码格式不正确'))
+								}
+							}
+						},
+						trigger: 'blur'
+					}],
+
+					supemail: [{
+						required: true,
+						validator: (rule, value, callback) => {
+							const mailReg = /^([a-zA-Z0-9_-])+@([a-zA-Z0-9_-])+(.[a-zA-Z0-9_-])+/
+							if(!value) {
+								return callback(new Error('邮箱不能为空'))
+							}
+							if(mailReg.test(value)) {
+								callback()
+							} else {
+								callback(new Error('请输入正确的邮箱格式'))
+							}
+						},
+						trigger: 'blur'
+					}]
+				},
+			},
+			methods: {
+				//确定选择
+				change(row) {
+					this.addSupplier.siteid = row.siteid;
+					this.addSupplier.supaddress = row.sitename;
+					this.dialogVisibleSupplier = false;
+
+				},
+				handleCloseSupplier(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				//窗口进行时
+				query() {
+					let _this = this;
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QuerySite`, function(data) {
+						_this.treeNodes = data.list;
+					});
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QuerySupplier`, function(supplier) {
+						_this.tableData = supplier;
+					});
+
+				},
+				//选择供应商地址
+				dealThing() {
+					let _this = this;
+					this.dialogVisibleSupplier = true;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryAllSite/`, function(SITEs) {
+						_this.site = SITEs;
+					});
+				},
+				//点击地址出现供应商
+				handleNodeClick(data) {
+					let _this = this;
+					this.SiteId = data.siteid;
+					this.SiteName = data.sitename;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QuerySiteSupplier/${data.siteid}`, function(supplier) {
+						_this.tableData = supplier;
+					});
+				},
+				//修改
+				updateBySupplier(id) {
+					let _this = this;
+					this.statrSupplier = 'update';
+					this.SupplierVisible = true;
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryByIdSupplier/${id}`, function(supplier) {
+						_this.addSupplier = supplier;
+					});
+				},
+				//删除
+				deleteBySupplier(id) {
+					let _this = this;
+					this.$confirm('确定删除?').then(() => {
+						$.ajax({
+							url: `http://127.0.0.1:8080/api/lingpeng/DeleteSupplier/${id}`,
+							type: "delete",
+							dataType: "json",
+							success(magsse) {
+								if(magsse.code == "200") {
+									_this.$message({
+										message: '删除成功',
+										type: 'success'
+									});
+									_this.query();
+									_this.SiteId = '';
+								} else {
+									_this.$message.error('删除失败');
+								}
+							}
+						});
+					}).catch(() => {
+						this.$message('取消操作');
+					});
+				},
+				//根据供应商名称模糊查询
+				selectBySupplier() {
+					if(this.Mhcxsupplier.name == '') {
+						this.query();
+					} else {
+						let _this = this;
+						$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryByNameSupplier/${this.Mhcxsupplier.name}`, function(supplier) {
+							_this.tableData = supplier;
+						});
+					}
+				},
+				//新增
+				addBySupplier() {
+					let id = this.SiteId;
+					this.addSupplier.supid = '';
+					this.addSupplier.supname = '';
+					this.addSupplier.supbrand = '';
+					this.addSupplier.supphone = '';
+					this.addSupplier.supemail = '';
+					if(id == "") {
+						this.$message('请选择供应商地址');
+					} else {
+						this.statrSupplier = 'add';
+						this.addSupplier.siteid = id;
+						this.addSupplier.supaddress = this.SiteName;
+						this.SupplierVisible = true;
+					}
+				},
+				//右键出菜单
+				rightClick(e, data, node, comp) {
+					this.rightMenu = {
+						top: e.pageY + 'px',
+						left: e.pageX + 'px'
+					}
+					this.tmDisplay = true;
+					const self = this;
+					document.onclick = function(ev) {
+						if(ev.target !== document.getElementById('perTreeMenu')) {
+							self.tmDisplay = false;
+						}
+					}
+					localStorage.setItem("id", data.siteid);
+					localStorage.setItem("data", data.children);
+				},
+				//点击新增父节点
+				addFSite() {
+					this.fyz = 'add';
+					this.addSite.fsiteId = 0;
+					this.addSite.sitename = '';
+					this.dialogVisible = true;
+				},
+				//点击新增子节点
+				addESite() {
+					this.fyz = 'add';
+					this.addSite.fsiteId = localStorage.getItem("id");
+					this.addSite.sitename = '';
+					this.dialogVisible = true;
+				},
+				//点击关闭模态框
+				handleCloseSipplier(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				//点击关闭模态框
+				handleClose(done) {
+					//确认框
+					this.$confirm('是否关闭').then(() => {
+						//正确
+						done(); //关闭
+					}).catch(() => {
+						//错误
+						this.$message('取消操作');
+					});
+				},
+				//确定新增节点
+				submitForm(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.handle();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				//确定新增供应商
+				submitFormToMa(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.handleSupplier();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				//操作供应商
+				handleSupplier() {
+					let _this = this;
+					if(this.statrSupplier == 'add') {
+						this.$confirm('确定新增?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/AddBySupplier',
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.addSupplier),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '录入完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.SupplierVisible = false;
+										_this.SiteId = '';
+									} else {
+										_this.$message.error('录入失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					} else {
+						this.$confirm('确定修改?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/UpdateSupplier',
+								type: "put",
+								contentType: "application/json",
+								data: JSON.stringify(_this.addSupplier),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '编辑完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.SupplierVisible = false;
+										_this.SiteId = '';
+									} else {
+										_this.$message.error('编辑失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					}
+				},
+				//删除节点
+				deleteSite() {
+					let data = localStorage.getItem("data");
+					let id = localStorage.getItem("id");
+					let _this = this;
+					this.$confirm('确定删除?').then(() => {
+						if(data == "") {
+							if(this.tableData.length == 0) {
+								$.ajax({
+									url: `http://127.0.0.1:8080/api/lingpeng/DeleteSite/${id}`,
+									type: "delete",
+									dataType: "json",
+									success(magsse) {
+										if(magsse.code == "200") {
+											_this.$message({
+												message: '删除成功',
+												type: 'success'
+											});
+											_this.query();
+										} else {
+											_this.$message.error('删除失败');
+										}
+									}
+								});
+							} else {
+								this.$message("此节点下有供应商，无法删除");
+							}
+						} else {
+							this.$message("此节点有子节点,无法删除");
+						}
+					}).catch(() => {
+						this.$message('取消操作');
+					});
+				},
+				//修改节点
+				updateESite() {
+					let id = localStorage.getItem("id");
+					let _this = this;
+					this.fyz = 'update';
+					$.ajaxSettings.async = false;
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryIdSite/${id}`, function(supplier) {
+						_this.addSite = supplier;
+					});
+					this.dialogVisible = true;
+				},
+				//操作节点
+				handle() {
+					let _this = this;
+					if(this.fyz == 'add') {
+						this.$confirm('确定新增?').then(() => {
+							$.ajax({
+								url: 'http://127.0.0.1:8080/api/lingpeng/AddSite',
+								type: "post",
+								contentType: "application/json",
+								data: JSON.stringify(_this.addSite),
+								dataType: "json",
+								success(message) {
+									if(message.code == "200") {
+										_this.$message({
+											message: '录入完成',
+											type: 'success'
+										});
+										_this.query();
+										_this.dialogVisible = false;
+									} else {
+										_this.$message.error('录入失败!');
+									}
+								}
+							});
+						}).catch(() => {
+							_this.$message('取消操作');
+						});
+					} else {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/UpdateSite',
+							type: "put",
+							contentType: "application/json",
+							data: JSON.stringify(_this.addSite),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '修改完成',
+										type: 'success'
+									});
+									_this.query();
+									_this.dialogVisible = false;
+								} else {
+									_this.$message.error('修改失败,请勿重复修改!');
+								}
+							}
+						});
+					}
+				}
+			},
+			mounted() {
+				this.query();
+			}
+		}).$mount("#VmSupplier");
+	</script>
+
+</html>

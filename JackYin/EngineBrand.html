@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>发动机品牌</title>
+		<!--<link rel="stylesheet" href="../css/index.css" />-->
+	</head>
+
+	<body>
+		<div id="VmEngine">
+			<el-col :span="22">
+				<!--<el-col :span="24">
+				<h1 style="font-size: 25px; margin-top: 2px;">发动机品牌</h1>
+			</el-col>-->
+				<el-form :inline="true" :model="formInline" class="demo-form-inline" :rules="formInlinetrue" ref="formInline">
+					<el-form-item label="发动机名称" style="margin-left: 0px;" prop="engname">
+						<!--<el-col :span="18">-->
+						<el-input v-model="formInline.engname" autocomplete="off"></el-input>
+						<!--</el-col>-->
+					</el-form-item>
+					<el-form-item label="发动机品牌" style="margin-left: 40px;" prop="engbrand">
+						<!--<el-col :span="18">-->
+						<el-input v-model="formInline.engbrand" autocomplete="off"></el-input>
+						<!--</el-col>-->
+					</el-form-item>
+					<el-form-item style="margin-left: 40px;">
+						<el-button type="success" icon="el-icon-circle-plus-outline" circle @click="ADD"></el-button>
+					</el-form-item>
+					<el-form-item style="margin-left: 20px;">
+						<el-button type="danger" icon="el-icon-delete" circle @click="DELETE(formInline.engid)"></el-button>
+					</el-form-item>
+					<el-form-item style="margin-left: 20px;">
+						<el-button type="primary" icon="el-icon-check" circle @click="submitForm('formInline')"></el-button>
+					</el-form-item>
+				</el-form>
+			</el-col>
+			<el-col :span="10" :offset="2">
+				<template>
+					<el-table :data="tableData" height="260" border>
+						<el-table-column label="序号" width="100">
+							<template slot-scope="temp">
+								{{temp.$index+1}}
+							</template>
+						</el-table-column>
+						<el-table-column prop="engname" label="发动机名称" width="200">
+						</el-table-column>
+						<el-table-column prop="engbrand" label="发动机品牌" width="120">
+						</el-table-column>
+						<el-table-column label="操作">
+							<template slot-scope="temp" width="90">
+								<el-button type="primary" icon="el-icon-edit" circle size="mini" @click="select(temp.row.engid)"></el-button>
+							</template>
+						</el-table-column>
+					</el-table>
+				</template>
+			</el-col>
+		</div>
+	</body>
+	<!--<script src="../js/jquery-1.12.4.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/jq_ajax_config.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/vue.js" type="text/javascript" charset="utf-8"></script>
+	<script src="../js/index.js" type="text/javascript" charset="utf-8"></script>-->
+	<script>
+		var VmEngine = new Vue({
+			data: {
+				state: 'add',
+				formInline: {
+					engid: '',
+					engname: '',
+					engbrand: ''
+				},
+				formInlinetrue: {
+					engname: [{
+							required: true,
+							message: '请输入发动机名称',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 20,
+							message: '长度在 1 到 20个字符',
+							trigger: 'blur'
+						}
+					],
+					engbrand: [{
+							required: true,
+							message: '请输入发动机品牌',
+							trigger: 'blur'
+						},
+						{
+							min: 1,
+							max: 12,
+							message: '长度在 1 到12个字符',
+							trigger: 'blur'
+						}
+					]
+				},
+				tableData: [],
+				deletesmodel: []
+			},
+			mounted() {
+				this.showEngine();
+			},
+			methods: {
+				showEngine() {
+					let _this = this; //非常重要
+					$.getJSON('http://127.0.0.1:8080/api/lingpeng/QueryEngine', function(engine) {
+						_this.tableData = engine;
+					});
+				},
+				ADD() {
+					this.formInline.engname = "";
+					this.formInline.engbrand = "";
+					this.state = "add";
+				},
+				DELETE(id) {
+					let _this = this; //非常重要
+					if(this.state == "update") {
+						$.ajaxSettings.async = false;
+						$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryCarModelByEngineId/1/50/${id}`, function(data) {
+							_this.deletesmodel = data;
+						});
+						if(this.deletesmodel.total == 0) {
+							this.$confirm('是否移除此发动机？', '确认信息', {
+									distinguishCancelAndClose: true,
+									confirmButtonText: '是',
+									cancelButtonText: '否'
+								})
+								.then(() => {
+									$.ajax({
+										url: `http://127.0.0.1:8080/api/lingpeng/DeleteEngine/${id}`,
+										type: "delete",
+										dataType: "json",
+										success(magsse) {
+											if(magsse.code == "200") {
+												_this.$message({
+													message: '移除成功',
+													type: 'success'
+												});
+												_this.formInline.engid = "";
+												_this.formInline.engname = "";
+												_this.formInline.engbrand = "";
+												_this.showEngine();
+												_this.state = "add";
+											} else {
+												_this.$message.error('移除失败');
+											}
+										}
+									});
+								})
+								.catch(action => {
+									this.$message('取消移除');
+								});
+						} else {
+							_this.$message.error('不能移除,有汽车有此发动机品牌');
+						}
+					} else {
+						this.$message({
+							message: '警告:请先选择发动机，再进行移除。',
+							type: 'warning'
+						});
+					}
+				},
+				submitForm(formName) {
+					this.$refs[formName].validate((valid) => {
+						if(valid) {
+							this.SAVA();
+						} else {
+							this.$message('请填写必要项');
+						}
+					});
+				},
+				SAVA() {
+					let _this = this;
+					if(this.state == 'add') {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/AddEngine',
+							type: "post",
+							contentType: "application/json",
+							data: JSON.stringify(_this.formInline),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '录入成功',
+										type: 'success'
+									});
+									_this.formInline.engname = "";
+									_this.formInline.engbrand = "";
+									_this.showEngine();
+									_this.state = 'add';
+								} else {
+									_this.$message.error('录入失败,请勿重复录入!');
+								}
+							}
+						});
+					} else {
+						$.ajax({
+							url: 'http://127.0.0.1:8080/api/lingpeng/UpdateEngine',
+							type: "put",
+							contentType: "application/json",
+							data: JSON.stringify(_this.formInline),
+							dataType: "json",
+							success(message) {
+								if(message.code == "200") {
+									_this.$message({
+										message: '编辑完成',
+										type: 'success'
+									});
+									_this.showEngine();
+									_this.select(_this.formInline.engid);
+								} else {
+									_this.$message.error('编辑失败,请勿重复编辑!');
+								}
+							}
+						});
+
+					}
+				},
+				select(id) {
+					let _this = this; //非常重要
+					$.getJSON(`http://127.0.0.1:8080/api/lingpeng/QueryIdEngine/${id}`, function(engine) {
+						_this.formInline = engine;
+					});
+					this.state = "update";
+				}
+			}
+		}).$mount("#VmEngine")
+	</script>
+
+</html>
